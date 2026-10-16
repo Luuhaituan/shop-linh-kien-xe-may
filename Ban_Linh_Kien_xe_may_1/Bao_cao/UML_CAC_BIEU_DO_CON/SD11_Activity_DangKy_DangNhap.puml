@@ -1,0 +1,97 @@
+@startuml SD11_Activity_DangKy_DangNhap
+title BIỂU ĐỒ HOẠT ĐỘNG - ĐĂNG KÝ / ĐĂNG NHẬP (Activity Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+
+|Khách hàng|
+start
+
+' ===========================
+'        ĐĂNG KÝ
+' ===========================
+:Nhấn "Đăng ký";
+|Mở Dang_ky.aspx|
+:Hiển thị form: Họ tên, Tên đăng nhập, Email,\nSĐT, Mật khẩu, Nhập lại MK;
+:reCAPTCHA v2;
+:Nhập thông tin;
+:Nhấn "Đăng ký";
+|Trình duyệt (JS)|
+:Gửi POST Dang_ky.aspx.cs;
+
+|Dang_ky.aspx.cs|
+:Validate reCAPTCHA;
+:Validate dữ liệu (rỗng, định dạng email, độ dài MK);
+
+|QuanLyLinhKienXeMay DB|
+:SELECT COUNT WHERE TenDangNhap = ?;
+:SELECT COUNT WHERE Email = ?;
+:SELECT COUNT WHERE SoDienThoai = ?;
+
+if (Có trùng?) then (Có)
+    |Trình duyệt (JS)|
+    :Hiển thị thông báo "Trùng tên đăng nhập/email/SĐT";
+    |Khách hàng|
+    :Sửa lại thông tin;
+    stop
+else (Không)
+endif
+
+|DB INSERT INTO NguoiDung|
+:VaiTro = "User", TrangThai = true;
+|Tạo session["User"]|
+|Chuyển sang Dang_nhap.aspx|
+stop
+
+' ===========================
+'        ĐĂNG NHẬP
+' ===========================
+|Khách hàng|
+:Nhấn "Đăng nhập";
+|Mở Dang_nhap.aspx|
+:Hiển thị form Tên đăng nhập/Email\n+ Mật khẩu + reCAPTCHA v2;
+:Nhập thông tin;
+:Nhấn "Đăng nhập";
+
+|Dang_nhap.aspx.cs|
+:Validate reCAPTCHA;
+:SELECT NguoiDung WHERE TenDangNhap = ? OR Email = ?;
+
+if (Không tìm thấy?) then (Có)
+    |Trình duyệt (JS)|
+    :Hiển thị "Sai tài khoản hoặc mật khẩu";
+    stop
+else (Không)
+endif
+
+|PasswordHelper|
+:VerifyPassword(matKhauDB, matKhauNhap);
+
+if (Sai mật khẩu?) then (Có)
+    |Trình duyệt (JS)|
+    :Hiển thị "Sai mật khẩu";
+    stop
+else (Không)
+endif
+
+if (TrangThai == false?) then (Có - bị khóa)
+    |Trình duyệt (JS)|
+    :Hiển thị "Tài khoản bị khóa";
+    stop
+else (Không)
+endif
+
+|Session["User"] = user|
+
+if (VaiTro == "Admin") then (Có)
+    |Chuyển sang Admin.aspx|
+else (Không)
+    |Chuyển sang index.aspx|
+endif
+
+|Khách hàng|
+:Vào trang chủ / trang quản trị;
+stop
+
+@enduml

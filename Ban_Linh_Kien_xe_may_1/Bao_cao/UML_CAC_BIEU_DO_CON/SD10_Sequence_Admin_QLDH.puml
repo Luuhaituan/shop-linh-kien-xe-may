@@ -1,0 +1,68 @@
+@startuml SD10_Sequence_Admin_QLDH
+title SƠ ĐỒ TRÌNH TỰ - QUẢN TRỊ XỬ LÝ ĐƠN HÀNG (Sequence Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+skinparam sequenceArrowThickness 1
+
+actor "Admin / NV Bán hàng" as AD
+participant "Admin.aspx\n(JS - Tab Đơn hàng)" as AJ
+participant "AdminQuanLyDonHangApi" as ListAPI
+participant "CapNhatDonHangApi" as UpdateAPI
+participant "PhanQuyen" as PQ
+participant "NhatKyHelper" as NK
+database "QuanLyLinhKienXeMay" as DB
+
+AD -> AJ : Đăng nhập (Session["User"])
+AJ -> AJ : JS phân quyền:\nnếu user là Admin / NhanVienBanHang\nmới hiện tab "donhang"
+
+AJ -> ListAPI : GET /API/AdminQuanLyDonHangApi\n(action mặc định)
+
+ListAPI -> PQ : CoQuyen(user.VaiTro, "donhang")
+PQ --> ListAPI : true/false
+
+alt Không có quyền
+    ListAPI --> AJ : 403 Forbidden
+    AJ -> AD : Thông báo "Từ chối truy cập"
+else Có quyền
+    ListAPI -> DB : SELECT * FROM DonHang\nORDER BY NgayDat DESC
+    DB --> ListAPI : Danh sách đơn hàng
+    ListAPI --> AJ : {success, data:[...]}
+    AJ -> AD : Hiển thị bảng đơn hàng
+end
+
+AD -> AJ : Đếm nhanh số đơn cần xử lý
+AJ -> ListAPI : GET ?action=pending_count
+ListAPI -> DB : SELECT COUNT WHERE TrangThaiDon = 'Chờ xác nhận'\n+ SELECT COUNT WHERE 'Đang giao'/'Shipper'
+DB --> ListAPI : {choXacNhan, dangGiao}
+ListAPI --> AJ : {success, choXacNhan, dangGiao}
+AJ -> AD : Hiển thị badge thông báo
+
+AD -> AJ : Chọn đơn, chọn trạng thái mới\n(vd: "Đang chuẩn bị hàng")
+AD -> AJ : Nhấn "Lưu"
+
+AJ -> UpdateAPI : POST /API/CapNhatDonHangApi\nid, trangThai, donViVanChuyen, maVanDon, lyDoHuy
+
+UpdateAPI -> PQ : CoQuyen(user.VaiTro, "donhang")
+PQ --> UpdateAPI : true
+
+UpdateAPI -> DB : SELECT DonHang WHERE MaDonHang = id
+DB --> UpdateAPI : donHang (hiện tại)
+
+UpdateAPI -> UpdateAPI : KiemTraLuongHopLe(trangThaiCu, trangThaiMoi)
+
+alt Luồng trạng thái không hợp lệ
+    UpdateAPI --> AJ : {success:false, message}
+    AJ -> AD : Thông báo lỗi
+else Hợp lệ
+    UpdateAPI -> DB : UPDATE DonHang\nSET TrangThaiDon, TrangThaiThanhToan,\nDonViVanChuyen, MaVanDon, LyDoHuy
+    DB --> UpdateAPI : OK
+    UpdateAPI -> DB : INSERT LichSuDonHang\n(MaDonHang, TrangThaiCu, TrangThaiMoi, GhiChu, NguoiThucHien)
+    DB --> UpdateAPI : OK
+    UpdateAPI -> NK : Ghi("Cập nhật đơn hàng", id, ...)\nvào NhatKyHoatDong
+    UpdateAPI --> AJ : {success, message}
+    AJ -> AD : Toast "Cập nhật thành công"
+endif
+
+@enduml

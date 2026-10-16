@@ -1,0 +1,68 @@
+@startuml SD07_Sequence_DatHang
+title SƠ ĐỒ TRÌNH TỰ - ĐẶT HÀNG (Sequence Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+skinparam sequenceArrowThickness 1
+
+actor "Khách hàng" as KH
+participant "ThanhToan.aspx\n(JS)" as UI
+participant "DatHangApi" as API
+participant "MaGiamGiaHelper" as Helper
+database "QuanLyLinhKienXeMay" as DB
+
+KH -> UI : Nhập thông tin\n+ chọn PT thanh toán
+KH -> UI : (Có thể nhập mã giảm giá)
+UI -> API : POST /API/MaGiamGiaApi\nForm: action=check, maCode
+
+API -> Helper : KiemTra(maCode, tongTien, userId)
+Helper -> DB : SELECT * FROM MaGiamGia WHERE MaCode=?
+DB --> Helper : Thông tin mã
+
+alt Mã hợp lệ
+    Helper -> DB : Đếm DonHang có MaGiamGiaCode và TrangThaiDon != 'Đã hủy'
+    Helper --> API : {HopLe=true, TienGiam=X, ...}
+    API --> UI : {success, valid:true, tienGiam, tongThanhToan}
+    UI -> KH : Hiển thị "Áp dụng mã thành công"
+else Mã không hợp lệ
+    Helper --> API : {HopLe=false, ThongBao}
+    API --> UI : {success, valid:false, message}
+    UI -> KH : Hiển thị lỗi
+end
+
+KH -> UI : Nhấn "Đặt hàng"
+UI -> API : POST /API/DatHangApi\nForm: ten, sdt, diaChi, ptThanhToan, maCode
+
+API -> DB : SELECT GioHang, ChiTietGioHang, LinhKien theo userId
+DB --> API : Danh sách SP
+
+API -> API : Tính tongTien = SUM(SoLuong * GiaBan)
+API -> API : tongThanhToan = tongTien - tienGiam
+
+API -> DB : UPDATE NguoiDung\nSET HoTen, SoDienThoai, DiaChi
+DB --> API : OK
+
+API -> API : Tạo trackingCode = "VD" + yymmddHHmmss
+
+API -> DB : INSERT DonHang\n(TongTien, MaVanDon, TrangThaiDon="Chờ xác nhận")
+DB --> API : MaDonHang (mới)
+
+API -> DB : INSERT ChiTietDonHang\ncho từng sản phẩm
+API -> DB : UPDATE LinhKien\nSET SoLuongTon = SoLuongTon - SoLuong
+API -> DB : DELETE ChiTietGioHang
+DB --> API : OK
+
+API -> DB : UPDATE MaGiamGia SET DaDung = DaDung + 1
+DB --> API : OK
+
+API --> UI : JSON {success, maDonHang, maVanDon, tongTien, tienGiam, tongThanhToan}
+UI -> KH : Hiển thị "Đặt hàng thành công"\n+ MaVanDon
+
+alt Phương thức = Chuyển khoản
+    UI -> KH : Hiển thị QR code\nnội dung CK = MaVanDon
+else Phương thức = COD
+    UI -> KH : Hiển thị "Thanh toán khi nhận hàng"
+end
+
+@enduml

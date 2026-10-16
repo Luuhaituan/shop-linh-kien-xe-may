@@ -1,0 +1,64 @@
+@startuml SD09_Sequence_Chat
+title SƠ ĐỒ TRÌNH TỰ - CHAT HỖ TRỢ KHÁCH HÀNG (Sequence Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+skinparam sequenceArrowThickness 1
+
+actor "Khách hàng" as KH
+participant "ChatWidget\n(JS)" as CJ
+participant "ChatApi.ashx" as API
+database "QuanLyLinhKienXeMay" as DB
+actor "Nhân viên hỗ trợ" as NV
+participant "AdminChat\n(Admin.aspx)" as AJ
+
+KH -> CJ : Mở widget chat
+CJ -> API : GET /API/ChatApi?action=get_or_create_session
+API -> DB : SELECT TOP 1 MaPhienChat FROM PhienChat\nWHERE MaNguoiDung = ?
+alt Chưa có phiên
+    API -> DB : INSERT PhienChat (MaNguoiDung, GETDATE())\nOUTPUT INSERTED.MaPhienChat
+    DB --> API : maPhienChat (mới)
+else Đã có phiên
+    DB --> API : maPhienChat (cũ)
+end
+API --> CJ : {success, maPhienChat}
+
+CJ -> API : GET ?action=get_messages&maPhienChat=X
+API -> DB : SELECT MaTinNhan, MaNguoiGui, NoiDung, ThoiGianGui, HoTen\nFROM TinNhan JOIN NguoiDung\nWHERE MaPhienChat = X ORDER BY ThoiGianGui
+DB --> API : Danh sách tin nhắn
+API -> DB : UPDATE TinNhan SET DaDocKhach = 1\nWHERE MaPhienChat = X AND DaDocKhach = 0
+API --> CJ : {success, data: [...]}
+
+KH -> CJ : Nhập và gửi tin nhắn
+CJ -> API : POST ?action=send_message\nmaPhienChat=X, noiDung=...
+
+API -> API : Kiểm tra CanAccessSession\n(NguoiGui phải thuộc phiên hoặc là Staff)
+API -> DB : INSERT TinNhan (MaPhienChat, MaNguoiGui, NoiDung, GETDATE(),\nDaDocKhach=1, DaDocNhanVien=0)
+API --> CJ : {success}
+
+NV -> AJ : Đăng nhập Admin\n(theo phân quyền NhanVienHoTro)
+AJ -> API : GET ?action=admin_get_sessions
+API -> DB : SELECT p.MaPhienChat, HoTen, NoiDungCuoi, ThoiGianCuoi, SoTinChuaDoc\nFROM PhienChat p\nOUTER APPLY (TOP 1 TinNhan ...)\nOUTER APPLY (COUNT WHERE DaDocNhanVien=0)
+DB --> API : Danh sách phiên (sắp xếp theo tin chưa đọc)
+API --> AJ : {success, data}
+
+AJ -> API : GET ?action=get_messages&maPhienChat=X
+API -> DB : SELECT các tin nhắn của phiên X
+DB --> API : [...]
+API -> DB : UPDATE TinNhan SET DaDocNhanVien = 1
+API --> AJ : {success, data, currentUserId}
+
+NV -> AJ : Soạn và gửi trả lời
+AJ -> API : POST ?action=send_message\nmaPhienChat=X, noiDung=...
+
+API -> DB : INSERT TinNhan\nDaDocNhanVien=1, DaDocKhach=0
+API --> AJ : {success}
+
+note over CJ, AJ
+    Mỗi lần khách mở widget,
+    JS sẽ poll mỗi vài giây
+    để lấy tin nhắn mới.
+  end note
+
+@enduml

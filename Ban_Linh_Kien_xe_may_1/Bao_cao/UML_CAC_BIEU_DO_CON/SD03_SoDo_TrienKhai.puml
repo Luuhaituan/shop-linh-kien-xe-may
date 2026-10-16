@@ -1,0 +1,59 @@
+@startuml SD03_SoDo_TrienKhai
+title SƠ ĐỒ TRIỂN KHAI (Deployment Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+
+node "Máy khách\n(PC / Điện thoại)" {
+    artifact "Trình duyệt\n(Chrome / Edge)" as Br
+}
+
+node "Web Server\n(IIS / IIS Express)" {
+    artifact "VanDonMotor\n(ASP.NET WebForms 4.7.2)" as WebApp {
+        component "Trang ASPX\n(index, SanPham, ...)" as ASPX
+        component "API ASHX\n(JSON)" as ASHX
+        component "Utils\n(PhanQuyen, EmailHelper...)" as UTILS
+        component "Entity Framework\nEDMX" as EF
+    }
+}
+
+node "DB Server\n(Máy chủ SQL)" {
+    database "QuanLyLinhKienXeMay\n(SQL Server)" as DB
+}
+
+node "Dịch vụ bên ngoài" {
+    cloud "Gmail SMTP\n(smtp.gmail.com:587)" as SMTP
+    cloud "SePay\n(Webhook API)" as SePay
+}
+
+Br --> ASPX : HTTP/HTTPS\nGET .aspx
+Br --> ASHX : AJAX\nGET/POST .ashx
+ASPX --> UTILS
+ASHX --> UTILS
+ASHX --> EF : LINQ to Entities
+UTILS --> EF
+EF --> DB : SqlClient\nData Source=Admin-PC
+UTILS --> SMTP : Gửi email
+Br --> SePay : Thanh toán\n(Chuyển khoản)
+SePay --> ASHX : POST Webhook\nSePayWebhook.ashx
+
+note right of Br
+    Người dùng:
+    - User: chỉ dùng mặt cửa hàng
+    - Admin: truy cập /Admin.aspx
+    - NV: truy cập theo phân quyền
+  end note
+
+note right of DB
+    Có 18 bảng, gồm:
+    NguoiDung, LinhKien, DanhMuc, DongXe,
+    GioHang, ChiTietGioHang, DonHang,
+    ChiTietDonHang, DanhGia, PhienChat,
+    TinNhan, MaGiamGia, PhieuKho,
+    AnhSanPham, TuongThichXe,
+    LichSuDonHang, NhatKyHoatDong,
+    DanhGiaAn
+  end note
+
+@enduml

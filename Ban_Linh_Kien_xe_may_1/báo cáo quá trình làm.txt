@@ -1,0 +1,23 @@
+đã bổ sung them trang admim: gồm các chức năng chính Quản lý sản phẩm và quản lý đơn hang
+ - Quản lý sản phẩm gồm các chức năng: them, sửa, xóa
+	+ them: nhập tên sản phẩm, chọn danh mục, nhập giá, chọn ảnh
+	+ sửa: chọn sản phẩm, nhập giá, nhập số lượng còn trong kho
+	+ xóa : chọn sản phẩm cần xóa, xác nhận xóa SP
+-> sẽ được lưu vào SQL Server
+ - Quản lý đơn hang gồm các chức năng cập nhật trạng thái đơn hàng, xem chi tiết đơn hàng
+	+ cập nhật đơn hàng đang chờ, đã giao, hoàn trả, hủy đơn, hoàn trả
+	+ xem chi tiết tên sản phẩm người dùng đặt
+
+-- bổ sung them bình luận, đahs giá cho từng sản phẩm (xong)
+-- bổ sung them phiên chat giữa khách hang và cửa hang
+-- chỉnh sửa lại thanh toán qua ngân hàng
+
+
+1. Quy trình giao dịch (Transaction Process) cho Website bán phụ tùng xe máy
+-	Bước 1: Chọn sản phẩm. Khách hàng xem phụ tùng, chọn số lượng và bấm "Thêm vào giỏ hàng".
+	Bước 2: Xem giỏ hàng. Khách hàng kiểm tra lại danh sách linh kiện, tổng tiền và bấm nút "Thanh toán".
+	Bước 3: Khởi tạo Checkout. Hệ thống hiển thị giao diện nhập thông tin giao hàng và thanh toán.
+	Bước 4: Nhập dữ liệu. Khách hàng điền Email, Họ tên, Địa chỉ nhận hàng và Thông tin thẻ thanh toán.   
+	Bước 5: Xác nhận đặt hàng. Khách hàng bấm nút "Place Order". Giao diện Javascript sẽ đóng gói dữ liệu thành chuỗi JSON và gửi POST request lên API.   
+	Bước 6: Xử lý phía Server (API). Hệ thống tiếp nhận dữ liệu, kiểm tra tính hợp lệ (validate), tạo mã đơn hàng mới, lưu thông tin khách hàng vào cơ sở dữ liệu và trừ số lượng tồn kho của linh kiện.
+	Bước 7: Hoàn tất. API trả về kết quả thành công, giao diện chuyển hướng khách hàng sang trang "Cảm ơn" kèm theo mã vận đơn.

@@ -1,0 +1,97 @@
+@startuml SD05_Activity_DatHang
+title BIỂU ĐỒ HOẠT ĐỘNG - ĐẶT HÀNG (Activity Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+
+|Khách hàng|
+start
+:Duyệt sản phẩm (SanPham.aspx);
+
+|ChiTietSanPham.aspx|
+:Xem chi tiết;
+:Nhấn "Thêm vào giỏ";
+
+|Trình duyệt (JS)|
++->Gửi POST GioHangApi?action=add;
+:Cập nhật badge giỏ;
+
+|Khách hàng|
+:Mở giỏ hàng;
+
+|ThanhToan.aspx|
+:Hiển thị giỏ;
+:Nhập tên, SĐT, địa chỉ;
+:Chọn phương thức thanh toán;
+:Có thể nhập mã giảm giá;
+
+|Trình duyệt (JS)|
+:Gửi POST MaGiamGiaApi?action=check;
+
+|MaGiamGiaHelper|
+:SELECT MaGiamGia WHERE MaCode=?;
+:Kiểm tra trạng thái, hạn, số lượt;
+:Kiểm tra người dùng đã dùng chưa;
+:Tính tienGiam;
+:Trả kết quả;
+
+|Khách hàng|
+:Nhấn "Đặt hàng";
+
+|Trình duyệt (JS)|
+:Gửi POST DatHangApi với\nten, sdt, diaChi, ptThanhToan, maCode;
+
+|DatHangApi|
+:Kiểm tra Session["User"];
+
+if (Chưa đăng nhập?) then (Có)
+    :Trả về lỗi "Bạn cần đăng nhập";
+    stop
+else (Không)
+endif
+
+:Lấy giỏ hàng từ DB;
+if (Giỏ trống?) then (Có)
+    :Trả về lỗi "Giỏ hàng trống";
+    stop
+else (Không)
+endif
+
+:Tính tongTien;
+:Áp dụng mã giảm giá (nếu có);
+:tongThanhToan = tongTien - tienGiam;
+
+:Cập nhật HoTen, SoDienThoai, DiaChi vào NguoiDung;
+
+:Tạo mã vận đơn VD + yymmddHHmmss;
+
+:Tạo DonHang (TrangThaiDon = "Chờ xác nhận")\nTrangThaiThanhToan = "Chưa thanh toán";
+
+:Chuyển ChiTietGioHang -> ChiTietDonHang;
+
+:Trừ SoLuongTon trong LinhKien;
+
+:Xóa ChiTietGioHang;
+
+:Tăng DaDung trong MaGiamGia (nếu có);
+
+:Trả về JSON {success, maDonHang, maVanDon};
+
+|Trình duyệt (JS)|
+:Hiển thị thông báo thành công;
+:Hiển thị mã vận đơn;
+
+if (Phương thức là CK?) then (Có)
+    :Hiển thị QR code thanh toán;
+    :Hướng dẫn khách CK với nội dung\nchứa MaVanDon;
+else (COD)
+    :Hiển thị "Đặt hàng thành công,\nsẽ thanh toán khi nhận";
+endif
+
+|Khách hàng|
+:Chuyển đến DonHang.aspx để xem đơn;
+
+stop
+
+@enduml

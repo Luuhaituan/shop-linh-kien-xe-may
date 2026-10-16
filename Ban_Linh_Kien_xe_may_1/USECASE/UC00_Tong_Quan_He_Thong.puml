@@ -1,0 +1,275 @@
+@startuml UC00_Tong_Quan_He_Thong
+
+' =====================================================
+' THIẾT LẬP GIAO DIỆN
+' =====================================================
+!theme plain
+skinparam backgroundColor #F5F7FA
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+skinparam Padding 5
+skinparam shadowing false
+
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor     #5C6BC0
+    BorderThickness 1.5
+    FontSize        11
+    FontColor       #1A237E
+}
+
+skinparam actor {
+    BackgroundColor #FFF8E1
+    BorderColor     #F57F17
+    FontColor       #4E342E
+    FontStyle       bold
+    FontSize        12
+}
+
+skinparam rectangle {
+    BorderThickness 2
+    FontStyle       bold
+    FontSize        13
+}
+
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor     #F9A825
+    FontSize        10
+}
+
+skinparam arrow {
+    Color     #5C6BC0
+    FontColor #37474F
+    FontSize  10
+}
+
+' =====================================================
+' TIÊU ĐỀ
+' =====================================================
+title
+    <b><size:20>BIỂU ĐỒ USE CASE TỔNG QUÁT</size></b>
+    <b><size:14>Hệ Thống Bán Linh Kiện Xe Máy Trực Tuyến</size></b>
+    <size:10>ASP.NET WebForms  ·  Entity Framework  ·  SQL Server  ·  Google reCAPTCHA v2</size>
+end title
+
+' =====================================================
+' ACTORS
+' =====================================================
+actor "Khách Vãng Lai\n(Guest)" as Guest
+actor "Khách Hàng\n(User)"      as User
+actor "Quản Trị Viên\n(Admin)"  as Admin
+actor "Google\nreCAPTCHA"       as GCAP
+actor "SQL Server\nDatabase"    as DB
+
+' =====================================================
+' BOUNDARY HỆ THỐNG
+' =====================================================
+rectangle "Hệ Thống Bán Linh Kiện Xe Máy" {
+
+    ' ─────────────────────────────────────────────
+    ' NHÓM 1: TÀI KHOẢN
+    ' ─────────────────────────────────────────────
+    package "UC-01  Quản Lý Tài Khoản" as PKG1 #DDEEFF {
+        usecase "UC01\nĐăng ký tài khoản" as UC01
+        usecase "UC02\nĐăng nhập" as UC02
+        usecase "UC03\nĐăng xuất" as UC03
+        usecase "UC04\nQuên mật khẩu" as UC04
+        usecase "UC05\nCập nhật thông tin\ncá nhân" as UC05
+        usecase "UC06\nXác minh reCAPTCHA" as UC06
+        usecase "UC07\nKiểm tra trùng\ndữ liệu" as UC07
+        usecase "UC08\nPhân quyền\nAdmin / User" as UC08
+    }
+
+    ' ─────────────────────────────────────────────
+    ' NHÓM 2: SẢN PHẨM
+    ' ─────────────────────────────────────────────
+    package "UC-02  Duyệt & Xem Sản Phẩm" as PKG2 #E8F5E9 {
+        usecase "UC09\nXem trang chủ" as UC09
+        usecase "UC10\nXem danh sách\nlinh kiện" as UC10
+        usecase "UC11\nLọc theo danh mục" as UC11
+        usecase "UC12\nXem chi tiết\nsản phẩm" as UC12
+        usecase "UC13\nXem giá &\ntồn kho" as UC13
+        usecase "UC14\nXem hình ảnh\n& mô tả" as UC14
+        usecase "UC15\nXem điều khoản\ndịch vụ" as UC15
+    }
+
+    ' ─────────────────────────────────────────────
+    ' NHÓM 3: GIỎ HÀNG
+    ' ─────────────────────────────────────────────
+    package "UC-03  Quản Lý Giỏ Hàng" as PKG3 #FFF3E0 {
+        usecase "UC16\nThêm sản phẩm\nvào giỏ" as UC16
+        usecase "UC17\nXem giỏ hàng" as UC17
+        usecase "UC18\nCập nhật số lượng" as UC18
+        usecase "UC19\nXóa sản phẩm\nkhỏi giỏ" as UC19
+        usecase "UC20\nTính tổng tiền\nhiện tại" as UC20
+        usecase "UC21\nTự tạo giỏ\nhàng mới" as UC21
+    }
+
+    ' ─────────────────────────────────────────────
+    ' NHÓM 4: ĐẶT HÀNG
+    ' ─────────────────────────────────────────────
+    package "UC-04  Đặt Hàng & Thanh Toán" as PKG4 #F3E5F5 {
+        usecase "UC22\nNhập thông tin\ngiao hàng" as UC22
+        usecase "UC23\nChọn phương thức\nthanh toán" as UC23
+        usecase "UC24\nXác nhận đặt hàng" as UC24
+        usecase "UC25\nTính tổng tiền\nđơn hàng" as UC25
+        usecase "UC26\nTạo đơn hàng mới" as UC26
+        usecase "UC27\nLưu thông tin\nvào hồ sơ" as UC27
+        usecase "UC28\nXóa giỏ hàng\nsau khi đặt" as UC28
+    }
+
+    ' ─────────────────────────────────────────────
+    ' NHÓM 5: ĐƠN HÀNG
+    ' ─────────────────────────────────────────────
+    package "UC-05  Quản Lý Đơn Hàng" as PKG5 #E0F2F1 {
+        usecase "UC29\nXem lịch sử\nđơn hàng" as UC29
+        usecase "UC30\nXem chi tiết\nđơn hàng" as UC30
+        usecase "UC31\nHủy đơn hàng" as UC31
+        usecase "UC32\nYêu cầu trả hàng\n/ Hoàn tiền" as UC32
+        usecase "UC33\nKiểm tra chính sách\n7 ngày" as UC33
+        usecase "UC34\nMua lại đơn hàng cũ" as UC34
+    }
+
+    ' ─────────────────────────────────────────────
+    ' NHÓM 6: ADMIN
+    ' ─────────────────────────────────────────────
+    package "UC-06  Quản Trị Hệ Thống" as PKG6 #FFEBEE {
+        usecase "UC35\nQuản lý\nsản phẩm (CRUD)" as UC35
+        usecase "UC36\nXem tất cả\nđơn hàng" as UC36
+        usecase "UC37\nCập nhật trạng thái\nđơn hàng" as UC37
+        usecase "UC38\nXử lý yêu cầu\ntrả hàng" as UC38
+        usecase "UC39\nQuản lý\nngười dùng" as UC39
+        usecase "UC40\nQuản lý danh mục\n& dòng xe" as UC40
+    }
+
+} ' end rectangle
+
+' =====================================================
+' QUAN HỆ ACTOR → USE CASE
+' =====================================================
+
+' --- GUEST ---
+Guest --> UC01
+Guest --> UC02
+Guest --> UC04
+Guest --> UC09
+Guest --> UC10
+Guest --> UC12
+Guest --> UC15
+
+' --- USER ---
+User --> UC02
+User --> UC03
+User --> UC05
+User --> UC09
+User --> UC10
+User --> UC12
+User --> UC15
+User --> UC16
+User --> UC17
+User --> UC18
+User --> UC19
+User --> UC22
+User --> UC23
+User --> UC24
+User --> UC29
+User --> UC31
+User --> UC32
+User --> UC34
+
+' --- ADMIN ---
+Admin --> UC02
+Admin --> UC35
+Admin --> UC36
+Admin --> UC37
+Admin --> UC38
+Admin --> UC39
+Admin --> UC40
+
+' =====================================================
+' QUAN HỆ <<include>> — BẮT BUỘC
+' =====================================================
+UC01 ..> UC06 : <<include>>
+UC02 ..> UC06 : <<include>>
+UC01 ..> UC07 : <<include>>
+UC02 ..> UC08 : <<include>>
+UC04 ..> UC07 : <<include>>
+
+UC12 ..> UC13 : <<include>>
+UC12 ..> UC14 : <<include>>
+
+UC16 ..> UC17 : <<include>>
+UC17 ..> UC20 : <<include>>
+
+UC24 ..> UC25 : <<include>>
+UC24 ..> UC26 : <<include>>
+UC24 ..> UC27 : <<include>>
+UC24 ..> UC28 : <<include>>
+
+UC30 ..> UC29 : <<include>>
+UC32 ..> UC33 : <<include>>
+UC34 ..> UC16 : <<include>>
+
+UC37 ..> UC36 : <<include>>
+UC38 ..> UC36 : <<include>>
+
+' =====================================================
+' QUAN HỆ <<extend>> — TÙY CHỌN
+' =====================================================
+UC11 ..> UC10 : <<extend>>
+UC16 ..> UC21 : <<extend>>
+
+' =====================================================
+' KẾT NỐI HỆ THỐNG NGOÀI
+' =====================================================
+UC06 --> GCAP : gọi API xác minh
+
+UC01 --> DB : INSERT NguoiDung
+UC02 --> DB : SELECT NguoiDung
+UC05 --> DB : UPDATE NguoiDung
+UC10 --> DB : SELECT LinhKien
+UC12 --> DB : SELECT LinhKien
+UC16 --> DB : INSERT ChiTietGioHang
+UC17 --> DB : SELECT GioHang
+UC24 --> DB : INSERT DonHang\nDELETE ChiTietGioHang
+UC29 --> DB : SELECT DonHang
+UC31 --> DB : UPDATE TrangThaiDon
+UC32 --> DB : UPDATE TrangThaiDon
+UC35 --> DB : CRUD LinhKien
+UC37 --> DB : UPDATE TrangThaiDon
+UC39 --> DB : UPDATE NguoiDung
+UC40 --> DB : CRUD DanhMuc
+
+' =====================================================
+' GHI CHÚ
+' =====================================================
+note right of UC31
+  <b>Điều kiện hủy đơn:</b>
+  TrangThaiDon = "Chờ xác nhận"
+  Kết quả: "Đã hủy"
+end note
+
+note right of UC32
+  <b>Điều kiện trả hàng:</b>
+  TrangThaiDon = "Hoàn thành"
+  + Trong vòng 7 ngày
+  Kết quả: "Trả hàng/Hoàn tiền"
+end note
+
+note bottom of GCAP
+  <b>Google reCAPTCHA v2</b>
+  Bắt buộc tại:
+  Đăng ký & Đăng nhập
+end note
+
+note bottom of DB
+  <b>11 Bảng dữ liệu:</b>
+  NguoiDung · LinhKien · DanhMuc
+  DongXe · GioHang · ChiTietGioHang
+  DonHang · ChiTietDonHang
+  DanhGia · PhienChat · TinNhan
+end note
+
+@enduml

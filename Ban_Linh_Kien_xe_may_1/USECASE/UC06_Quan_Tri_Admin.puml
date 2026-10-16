@@ -1,0 +1,168 @@
+@startuml UC06_Quan_Tri_Admin
+
+' =============================================
+' CAI DAT GIAO DIEN
+' =============================================
+skinparam backgroundColor #FFF5F5
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #FFCDD2
+    BorderColor #B71C1C
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #7F0000
+    ArrowColor #B71C1C
+}
+skinparam actor {
+    BackgroundColor #FFCDD2
+    BorderColor #C62828
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #FFEBEE
+    BorderColor #B71C1C
+    BorderThickness 2
+    FontColor #B71C1C
+    FontStyle bold
+    FontSize 14
+}
+skinparam package {
+    BackgroundColor #FFF3F3
+    BorderColor #EF9A9A
+    BorderThickness 1.5
+    FontColor #C62828
+    FontStyle bold
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #B71C1C
+
+title
+    <b><size:18>UC-06: Quan Tri He Thong (Admin)</size></b>
+    <size:12>He Thong Ban Linh Kien Xe May</size>
+    <size:10>(Admin.aspx | Admin_DonHang.aspx | Phan quyen VaiTro = "Admin")</size>
+end title
+
+' =============================================
+' ACTORS
+' =============================================
+actor "Quan Tri Vien\n(Admin)" as Admin
+actor "Google\nreCAPTCHA" as Captcha #C8E6C9
+
+' =============================================
+' SYSTEM BOUNDARY
+' =============================================
+rectangle "UC-06: Quan Tri He Thong" {
+
+    usecase "UC06.1\nDang nhap\nvao trang Admin" as UC_Login
+    usecase "UC06.2\nXem trang quan tri\n(Admin.aspx)" as UC_Dashboard
+
+    package "Quan Ly San Pham" {
+        usecase "UC06.3\nXem danh sach\nlinh kien" as UC_ViewProduct
+        usecase "UC06.4\nThem san pham\nmoi" as UC_AddProduct
+        usecase "UC06.5\nSua thong tin\nsan pham" as UC_EditProduct
+        usecase "UC06.6\nXoa / An\nsan pham" as UC_DeleteProduct
+        usecase "UC06.7\nQuan ly\nhinh anh SP" as UC_ManageImage
+        usecase "UC06.8\nQuan ly\nton kho" as UC_ManageStock
+    }
+
+    package "Quan Ly Don Hang" {
+        usecase "UC06.9\nXem tat ca\ndon hang" as UC_ViewOrders
+        usecase "UC06.10\nCap nhat trang thai\ndon hang" as UC_UpdateStatus
+        usecase "UC06.11\nXac nhan\ndon hang" as UC_ConfirmOrder
+        usecase "UC06.12\nXem chi tiet\ntung don" as UC_OrderDetail
+        usecase "UC06.13\nXu ly yeu cau\ntra hang" as UC_HandleReturn
+    }
+
+    package "Quan Ly Nguoi Dung" {
+        usecase "UC06.14\nXem danh sach\nnguoi dung" as UC_ViewUsers
+        usecase "UC06.15\nXem thong tin\ntai khoan" as UC_UserDetail
+        usecase "UC06.16\nKhoa / Mo\ntai khoan" as UC_LockUser
+    }
+
+    package "Quan Ly Danh Muc" {
+        usecase "UC06.17\nXem danh muc\nlinh kien" as UC_ViewCategory
+        usecase "UC06.18\nThem / Sua\nDanh muc" as UC_EditCategory
+        usecase "UC06.19\nQuan ly\nDong xe" as UC_ManageBike
+    }
+
+}
+
+' =============================================
+' ACTOR LINKS
+' =============================================
+Admin --> UC_Login
+Admin --> UC_Dashboard
+Admin --> UC_ViewProduct
+Admin --> UC_AddProduct
+Admin --> UC_EditProduct
+Admin --> UC_DeleteProduct
+Admin --> UC_ManageStock
+Admin --> UC_ViewOrders
+Admin --> UC_UpdateStatus
+Admin --> UC_ConfirmOrder
+Admin --> UC_HandleReturn
+Admin --> UC_ViewUsers
+Admin --> UC_LockUser
+Admin --> UC_ViewCategory
+Admin --> UC_EditCategory
+Admin --> UC_ManageBike
+
+' =============================================
+' INCLUDE / EXTEND
+' =============================================
+UC_Login       ..> UC_Dashboard   : <<include>>
+UC_Login       ..> Captcha        : <<include>>
+
+UC_AddProduct  ..> UC_ManageImage : <<include>>
+UC_EditProduct ..> UC_ManageImage : <<include>>
+
+UC_ViewOrders  ..> UC_OrderDetail  : <<include>>
+UC_ViewUsers   ..> UC_UserDetail   : <<include>>
+
+UC_UpdateStatus ..> UC_ConfirmOrder : <<extend>>
+
+' =============================================
+' GHI CHU
+' =============================================
+note right of UC_UpdateStatus
+    <b>Cac trang thai Admin quan ly:</b>
+    "Cho xac nhan"
+       -> "Dang xu ly"
+       -> "Dang giao hang"
+       -> "Hoan thanh"
+
+    Xu ly tra hang:
+    "Tra hang/Hoan tien"
+       -> Admin xac nhan hoan tien
+end note
+
+note right of UC_Login
+    <b>Phan quyen dang nhap:</b>
+    VaiTro = "Admin"
+    -> Redirect Admin.aspx
+    reCAPTCHA bat buoc
+end note
+
+note bottom of UC_DeleteProduct
+    <b>Xoa mem (Soft Delete):</b>
+    Khong xoa khoi DB
+    -> Dat TrangThai = false
+    -> An khoi giao dien nguoi dung
+end note
+
+note bottom of UC_ManageStock
+    <b>Quan ly ton kho:</b>
+    Cap nhat SoLuongTon
+    Bang LinhKien
+    -> Hien thi tren trang SP
+end note
+
+@enduml

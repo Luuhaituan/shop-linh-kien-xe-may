@@ -1,0 +1,94 @@
+@startuml AD07_Tra_Hang_Hoan_Tien
+
+skinparam backgroundColor #F0FFF8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActivityBorderColor #00695C
+skinparam ActivityBackgroundColor #B2DFDB
+skinparam ActivityDiamondBackgroundColor #FFF9C4
+skinparam ActivityDiamondBorderColor #F9A825
+skinparam ActivityStartColor #00695C
+skinparam ActivityEndColor #1B5E20
+skinparam ArrowColor #00695C
+skinparam NoteBackgroundColor #FFF9C4
+skinparam NoteBorderColor #F9A825
+
+title
+    <b><size:16>AD-07: Tra Hang / Hoan Tien</size></b>
+    <size:11>He Thong Ban Linh Kien Xe May</size>
+    <size:10>API: HuyDonHangApi.ashx?action=hoanhang | Chinh sach: 7 ngay</size>
+end title
+
+|#F0FFF8| User (DonHang.aspx) |
+|#E3F2FD| HuyDonHangApi.ashx |
+|#E8F5E9| Database (SQL Server) |
+
+|User (DonHang.aspx)|
+start
+:Xem danh sach don hang;
+:Tim don hang da "Hoan thanh";
+:Nhan nut "Yeu Cau Tra Hang";
+:Hien thi hop xac nhan:\n"Yeu cau tra hang/hoan tien?";
+if (Dong y?) then (Khong)
+  :Dong hop thoai;
+  stop
+else (Co)
+endif
+:Gui POST:\nHuyDonHangApi.ashx?action=hoanhang\n&id={maDonHang};
+
+|HuyDonHangApi.ashx|
+:Nhan request;
+if (Session["User"] ton tai?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Chua dang nhap";
+  stop
+else (Co)
+endif
+
+:Lay MaNguoiDung tu Session;
+
+|Database (SQL Server)|
+:SELECT * FROM DonHang\nWHERE MaDonHang = @maDH;
+
+|HuyDonHangApi.ashx|
+if (Don hang thuoc ve User nay?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Khong co quyen";
+  stop
+else (Co)
+endif
+
+if (TrangThaiDon =\n"Hoan thanh"?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Don hang chua hoan thanh,\nkhong the yeu cau tra";
+  |User (DonHang.aspx)|
+  :Hien thi thong bao loi;
+  stop
+else (Co)
+endif
+
+:Tinh so ngay:\nsoNgay = (DateTime.Now - NgayDat)\n         .TotalDays;
+note right
+  Chinh sach tra hang:
+  Toi da 7 ngay ke tu
+  ngay dat hang
+end note
+
+if (soNgay <= 7 ngay?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n{ success: false,\n  message: "Da qua 7 ngay\n  chinh sach tra hang" };
+  |User (DonHang.aspx)|
+  :Hien thi thong bao:\n"Da qua thoi han 7 ngay\nkhong the tra hang!";
+  stop
+else (Co - Con trong han)
+endif
+
+|Database (SQL Server)|
+#D5E8D4 :UPDATE DonHang\nSET TrangThaiDon =\n    'Tra hang/Hoan tien'\nWHERE MaDonHang = @maDH;
+
+|HuyDonHangApi.ashx|
+:Tra ve:\n{ success: true };
+
+|User (DonHang.aspx)|
+#D5E8D4 :Cap nhat giao dien:;
+:Trang thai don hien thi\n"Tra hang/Hoan tien";
+:Thong bao:\n"Yeu cau da gui!\nAdmin se xu ly hoan tien.";
+stop
+
+@enduml

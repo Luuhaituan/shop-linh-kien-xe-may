@@ -1,0 +1,78 @@
+@startuml SD06_Activity_ThanhToan
+title BIỂU ĐỒ HOẠT ĐỘNG - THANH TOÁN SEPAY (Activity Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+
+|SePay (Bank)|
+|Khách hàng|
+|Trình duyệt (JS)|
+|SePayWebhook.ashx|
+|QuanLyLinhKienXeMay DB|
+
+|SePay (Bank)|
+start
+
+|Khách hàng|
+:Đã đặt đơn hàng với\nPhuongThucThanhToan = "Chuyển khoản";
+
+|Trình duyệt (JS)|
+:Hiển thị QR code\nchứa MaVanDon;
+
+|Khách hàng|
+:Mở app ngân hàng;
+:Quét QR;
+:Nhập số tiền;
+:Khẳng định chuyển khoản;
+
+|SePay (Bank)|
+:Nhận tiền vào tài khoản;
+:Tạo Webhook payload JSON;
+
+|SePay (Bank)|
+->SePayWebhook.ashx:POST /API/SePayWebhook.ashx\n{id, gateway, content, transferType, transferAmount};
+
+|SePayWebhook.ashx|
+:Đọc JSON body;
+:Deserialize thành SePayWebhookPayload;
+
+if (transferType != "in"\nHOẶC content rỗng?) then (Có)
+    :Trả về 200 OK, bỏ qua;
+    stop
+else (Không)
+endif
+
+:soTienChuyen = data.transferAmount;
+:noiDungCK = data.content.Trim();
+
+|QuanLyLinhKienXeMay DB|
+:SELECT * FROM DonHang\nWHERE TrangThaiThanhToan = 'Chưa thanh toán'\nAND MaVanDon IS NOT NULL;
+
+|SePayWebhook.ashx|
+:Tìm đơn có MaVanDon xuất hiện\ntrong noiDungCK;
+
+if (Tìm thấy đơn?) then (Có)
+    if (soTienChuyen >= donHang.TongTien?) then (Đủ)
+        :donHang.TrangThaiThanhToan = 'Đã thanh toán';
+        :donHang.TrangThaiDon = 'Đã xác nhận';
+        |QuanLyLinhKienXeMay DB|
+        :UPDATE DonHang;
+        |SePayWebhook.ashx|
+        :Trả về JSON {success, maVanDon};
+        stop
+    else (Không đủ)
+        :Trả về "Số tiền không khớp";
+        stop
+    endif
+else (Không)
+    :Trả về "Không tìm thấy đơn trùng khớp";
+    stop
+endif
+
+note right
+    Hệ thống luôn trả về HTTP 200
+    để SePay không retry nhiều lần.
+  end note
+
+@enduml

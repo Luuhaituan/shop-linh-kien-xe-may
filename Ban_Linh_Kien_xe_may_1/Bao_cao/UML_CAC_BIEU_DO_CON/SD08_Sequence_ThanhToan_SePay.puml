@@ -1,0 +1,56 @@
+@startuml SD08_Sequence_ThanhToan_SePay
+title SƠ ĐỒ TRÌNH TỰ - THANH TOÁN TỰ ĐỘNG QUA SEPAY (Sequence Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+skinparam sequenceArrowThickness 1
+
+actor "Khách hàng" as KH
+participant "Ngân hàng\n(Mobile App)" as Bank
+participant "SePay" as SP
+participant "SePayWebhook.ashx" as WH
+database "QuanLyLinhKienXeMay" as DB
+
+note over KH: Đã đặt đơn hàng,\nphương thức = "Chuyển khoản",\nđã có MaVanDon
+
+KH -> Bank : Quét QR code
+KH -> Bank : Nhập số tiền\n= tongThanhToan
+KH -> Bank : Nhập nội dung\nchứa MaVanDon
+KH -> Bank : Xác nhận CK
+
+Bank -> SP : Gửi tiền vào STK
+
+SP -> SP : Nhận tiền
+SP -> SP : Tạo Webhook payload
+
+SP -> WH : POST /API/SePayWebhook.ashx\nJSON: {id, gateway, transactionDate,\naccountNumber, content, transferType, transferAmount}
+
+WH -> WH : Đọc body, Deserialize
+WH -> WH : Kiểm tra transferType="in"\n& content không rỗng
+
+WH -> DB : SELECT * FROM DonHang\nWHERE TrangThaiThanhToan = 'Chưa thanh toán'\nAND MaVanDon IS NOT NULL
+
+DB --> WH : Danh sách đơn chờ CK
+
+loop Với mỗi đơn
+    WH -> WH : Kiểm tra MaVanDon có\ntrong content (IgnoreCase)
+    alt Tìm thấy đơn khớp
+        WH -> WH : Lưu donHang
+        WH -> WH : Kiểm tra soTienChuyen\n>= donHang.TongTien
+        alt Số tiền đủ
+            WH -> DB : UPDATE DonHang\nSET TrangThaiThanhToan = 'Đã thanh toán'\n    TrangThaiDon = 'Đã xác nhận'
+            DB --> WH : OK
+            WH --> SP : 200 OK {success, maVanDon}
+        else Không đủ tiền
+            WH --> SP : 200 OK {success, "Số tiền không khớp"}
+        end
+    else Không tìm thấy đơn
+        WH --> SP : 200 OK {success, "Không tìm thấy đơn"}
+    end
+end
+
+SP --> Bank : Xác nhận đã nhận
+Bank --> KH : Giao dịch thành công
+
+@enduml

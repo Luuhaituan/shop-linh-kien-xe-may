@@ -1,0 +1,633 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+    --primary: #ff6b00;
+    --primary-dark: #cc5500;
+    --primary-glow: rgba(255,107,0,.22);
+    --bg: #0d0d0f;
+    --card: rgba(22,22,24,.85);
+    --border: rgba(255,255,255,.08);
+    --text: #f0f0f0;
+    --muted: #888;
+    --success: #22c55e;
+    --danger: #ef4444;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0
+}
+
+/* Đổi font-family ở đây thành Inter */
+html, body {
+    height: 100%;
+    font-family: 'Inter',sans-serif;
+    background: var(--bg);
+    color: var(--text)
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Outfit',sans-serif;
+    background: var(--bg);
+    color: var(--text)
+}
+
+/* ── Background ── */
+.auth-bg {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
+}
+
+    .auth-bg::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(ellipse 80% 60% at 20% 40%, rgba(255,107,0,.12) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 70%, rgba(100,80,200,.08) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+.gears {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden
+}
+
+.gear {
+    position: absolute;
+    opacity: .04;
+    font-size: 200px;
+    animation: spin 30s linear infinite
+}
+
+    .gear:nth-child(1) {
+        top: -60px;
+        left: -60px;
+        animation-duration: 40s
+    }
+
+    .gear:nth-child(2) {
+        bottom: -60px;
+        right: -60px;
+        animation-duration: 55s;
+        animation-direction: reverse;
+        font-size: 280px
+    }
+
+    .gear:nth-child(3) {
+        top: 40%;
+        left: 60%;
+        font-size: 120px;
+        animation-duration: 25s
+    }
+
+@keyframes spin {
+    from {
+        transform: rotate(0)
+    }
+
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+/* ── Card ── */
+.auth-card {
+    background: var(--card);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 440px;
+    padding: 40px;
+    box-shadow: 0 32px 80px rgba(0,0,0,.6);
+    animation: fadeUp .5s ease;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0)
+    }
+}
+
+/* ── Logo ── */
+.auth-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 32px;
+    text-decoration: none
+}
+
+    .auth-logo svg {
+        width: 40px;
+        height: 40px
+    }
+
+.auth-logo-text {
+    font-size: 26px;
+    font-weight: 900;
+    color: var(--text)
+}
+
+    .auth-logo-text span {
+        color: var(--primary)
+    }
+
+/* ── Title ── */
+.auth-title {
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 6px
+}
+
+.auth-subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 28px
+}
+
+/* ── Form ── */
+.form-group {
+    margin-bottom: 16px
+}
+
+label.auth-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px
+}
+
+.auth-input-wrap {
+    position: relative
+}
+
+.auth-input {
+    width: 100%;
+    background: rgba(255,255,255,.05);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 12px 42px 12px 44px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s,box-shadow .2s;
+}
+
+    .auth-input::placeholder {
+        color: var(--muted)
+    }
+
+    .auth-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-glow)
+    }
+
+    .auth-input.error-field {
+        border-color: var(--danger)
+    }
+
+.input-ico {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none
+}
+
+    .input-ico svg {
+        display: block;
+        width: 18px;
+        height: 18px
+    }
+
+.eye-btn {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 4px;
+    transition: color .2s
+}
+
+    .eye-btn:hover {
+        color: var(--primary)
+    }
+
+/* ── Role Selector ── */
+.role-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px
+}
+
+.role-card {
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 14px 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all .2s;
+    background: rgba(255,255,255,.03)
+}
+
+    .role-card:hover {
+        border-color: rgba(255,107,0,.4)
+    }
+
+    .role-card.selected {
+        border-color: var(--primary);
+        background: var(--primary-glow)
+    }
+
+    .role-card input {
+        display: none
+    }
+
+.role-icon {
+    font-size: 24px;
+    margin-bottom: 4px
+}
+
+.role-label {
+    font-size: 13px;
+    font-weight: 600
+}
+
+.role-desc {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px
+}
+
+/* ── Button ── */
+.btn-auth {
+    width: 100%;
+    background: var(--primary);
+    border: none;
+    color: #fff;
+    border-radius: 11px;
+    padding: 13px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 4px;
+    transition: all .25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+    .btn-auth:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 24px var(--primary-glow)
+    }
+
+    .btn-auth:active {
+        transform: translateY(0)
+    }
+
+    .btn-auth:disabled {
+        opacity: .6;
+        cursor: not-allowed;
+        transform: none
+    }
+
+    .btn-auth.loading::after {
+        content: '';
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,.4);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin .7s linear infinite
+    }
+
+/* ── Divider ── */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--muted);
+    font-size: 13px
+}
+
+    .auth-divider::before, .auth-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border)
+    }
+
+/* ── Links ── */
+.auth-footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--muted)
+}
+
+    .auth-footer a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: opacity .2s
+    }
+
+        .auth-footer a:hover {
+            opacity: .8
+        }
+
+.back-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    margin-bottom: 20px;
+    transition: color .2s
+}
+
+    .back-link:hover {
+        color: var(--text)
+    }
+
+/* ── Alert ── */
+.auth-alert {
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    display: none;
+    align-items: center;
+    gap: 10px
+}
+
+    .auth-alert.show {
+        display: flex
+    }
+
+    .auth-alert.error {
+        background: rgba(239,68,68,.12);
+        border: 1px solid rgba(239,68,68,.3);
+        color: #fca5a5
+    }
+
+    .auth-alert.success {
+        background: rgba(34,197,94,.12);
+        border: 1px solid rgba(34,197,94,.3);
+        color: #86efac
+    }
+
+/* ── Password Strength ── */
+.pw-strength {
+    margin-top: 6px
+}
+
+.pw-bars {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px
+}
+
+.pw-bar {
+    height: 3px;
+    flex: 1;
+    border-radius: 3px;
+    background: var(--border);
+    transition: background .3s
+}
+
+    .pw-bar.weak {
+        background: var(--danger)
+    }
+
+    .pw-bar.medium {
+        background: var(--primary)
+    }
+
+    .pw-bar.strong {
+        background: var(--success)
+    }
+
+.pw-label {
+    font-size: 11px;
+    color: var(--muted)
+}
+
+/* ── Modal (Popup Điều khoản) ── */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.modal-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+.modal-content {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    transform: translateY(30px);
+    transition: transform 0.3s ease;
+}
+.modal-overlay.show .modal-content {
+    transform: translateY(0);
+}
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+}
+.close-modal {
+    font-size: 28px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+.close-modal:hover {
+    color: var(--danger);
+}
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #d1d5db;
+}
+.modal-body h4 {
+    margin: 20px 0 10px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+}
+.modal-body p {
+    margin-bottom: 12px;
+}
+.modal-body ul {
+    padding-left: 20px;
+    margin-bottom: 12px;
+}
+.modal-body ul li {
+    margin-bottom: 6px;
+}
+.modal-body ul li strong {
+    color: var(--text);
+}
+/* ── Modal (Popup Điều khoản) ── */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+    .modal-overlay.show {
+        display: flex;
+        opacity: 1;
+    }
+
+.modal-content {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    transform: translateY(30px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal-content {
+    transform: translateY(0);
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .modal-header h2 {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+    }
+
+.close-modal {
+    font-size: 28px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+    .close-modal:hover {
+        color: var(--danger);
+    }
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #d1d5db;
+}
+
+    .modal-body h4 {
+        margin: 20px 0 10px;
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .modal-body p {
+        margin-bottom: 12px;
+    }
+
+    .modal-body ul {
+        padding-left: 20px;
+        margin-bottom: 12px;
+    }
+
+        .modal-body ul li {
+            margin-bottom: 6px;
+        }
+
+            .modal-body ul li strong {
+                color: var(--text);
+            }
+/* Tùy chỉnh thanh cuộn cho Modal */
+.modal-body::-webkit-scrollbar { width: 6px; }
+.modal-body::-webkit-scrollbar-track { background: transparent; }
+.modal-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+.modal-body::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }

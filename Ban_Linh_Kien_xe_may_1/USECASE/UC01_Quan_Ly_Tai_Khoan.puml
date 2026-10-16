@@ -1,0 +1,142 @@
+@startuml UC01_Quan_Ly_Tai_Khoan
+
+' =============================================
+' CAI DAT GIAO DIEN
+' =============================================
+skinparam backgroundColor #F0F4FF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #DDEEFF
+    BorderColor #1565C0
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #0D1B4B
+    ArrowColor #1565C0
+}
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #EEF4FF
+    BorderColor #1565C0
+    BorderThickness 2
+    FontColor #1565C0
+    FontStyle bold
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #1565C0
+
+title
+    <b><size:18>UC-01: Quan Ly Tai Khoan</size></b>
+    <size:12>He Thong Ban Linh Kien Xe May</size>
+    <size:10>(Dang_ky.aspx | Dang_nhap.aspx | Dang_xuat.aspx | Quen_mat_khau.aspx)</size>
+end title
+
+' =============================================
+' ACTORS
+' =============================================
+actor "Khach Vang Lai\n(Guest)" as Guest
+actor "Khach Hang\n(User)" as User
+actor "Quan Tri Vien\n(Admin)" as Admin
+actor "Google\nreCAPTCHA" as Captcha #C8E6C9
+
+' =============================================
+' SYSTEM BOUNDARY
+' =============================================
+rectangle "UC-01: Quan Ly Tai Khoan" {
+
+    usecase "UC01.1\nXem trang chu\n(index.aspx)" as UC_Home
+    usecase "UC01.2\nDang ky\ntai khoan moi" as UC_Register
+    usecase "UC01.3\nDang nhap\nhe thong" as UC_Login
+    usecase "UC01.4\nDang xuat\nhe thong" as UC_Logout
+    usecase "UC01.5\nQuen mat khau\n/ Dat lai" as UC_ForgotPW
+    usecase "UC01.6\nCap nhat thong tin\nca nhan (SDT, Dia chi)" as UC_UpdateInfo
+    usecase "UC01.7\nKiem tra trung\nTen dang nhap" as UC_CheckUser
+    usecase "UC01.8\nKiem tra trung\nEmail" as UC_CheckEmail
+    usecase "UC01.9\nKiem tra trung\nSo dien thoai" as UC_CheckPhone
+    usecase "UC01.10\nXac minh\nreCAPTCHA v2" as UC_Captcha
+    usecase "UC01.11\nXac minh danh tinh\n(Ten DN + Email)" as UC_VerifyID
+    usecase "UC01.12\nPhan quyen\nAdmin / User" as UC_Role
+
+}
+
+' =============================================
+' ACTOR LINKS
+' =============================================
+Guest --> UC_Home
+Guest --> UC_Register
+Guest --> UC_Login
+Guest --> UC_ForgotPW
+
+User  --> UC_Home
+User  --> UC_Logout
+User  --> UC_UpdateInfo
+
+Admin --> UC_Login
+Admin --> UC_Logout
+
+' =============================================
+' INCLUDE / EXTEND
+' =============================================
+UC_Register ..> UC_CheckUser  : <<include>>
+UC_Register ..> UC_CheckEmail : <<include>>
+UC_Register ..> UC_CheckPhone : <<include>>
+UC_Register ..> UC_Captcha    : <<include>>
+
+UC_Login    ..> UC_Captcha    : <<include>>
+UC_Login    ..> UC_Role       : <<include>>
+
+UC_ForgotPW ..> UC_VerifyID   : <<include>>
+
+' =============================================
+' EXTERNAL
+' =============================================
+UC_Captcha --> Captcha : <<calls API>>
+
+' =============================================
+' GHI CHU
+' =============================================
+note right of UC_Register
+    <b>Thong tin dang ky:</b>
+    - Ho ten
+    - Ten dang nhap (unique)
+    - Email (unique)
+    - So dien thoai (unique)
+    - Mat khau
+    - Vai tro mac dinh: "User"
+    - Redirect sang dang nhap sau 2s
+end note
+
+note right of UC_Login
+    <b>Cach dang nhap:</b>
+    Ten dang nhap HOAC Email
+    + Mat khau
+    + reCAPTCHA bat buoc
+end note
+
+note right of UC_Role
+    <b>Phan quyen sau dang nhap:</b>
+    VaiTro = "Admin" -> Admin.aspx
+    VaiTro = "User"  -> index.aspx
+    Luu Session["User"]
+end note
+
+note right of UC_ForgotPW
+    <b>Dat lai mat khau:</b>
+    Nhap Ten dang nhap + Email
+    -> Neu khop -> cap nhat
+    mat khau moi vao DB
+end note
+
+@enduml

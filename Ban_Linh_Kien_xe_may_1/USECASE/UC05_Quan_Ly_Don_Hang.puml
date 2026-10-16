@@ -1,0 +1,152 @@
+@startuml UC05_Quan_Ly_Don_Hang
+
+' =============================================
+' CAI DAT GIAO DIEN
+' =============================================
+skinparam backgroundColor #F0FFF8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #B2DFDB
+    BorderColor #00695C
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #004D40
+    ArrowColor #00695C
+}
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #E0F2F1
+    BorderColor #00695C
+    BorderThickness 2
+    FontColor #00695C
+    FontStyle bold
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #00695C
+
+title
+    <b><size:18>UC-05: Quan Ly Don Hang</size></b>
+    <size:12>He Thong Ban Linh Kien Xe May</size>
+    <size:10>(DonHang.aspx | DonHangApi | HuyDonHangApi | MuaLaiApi)</size>
+end title
+
+' =============================================
+' ACTORS
+' =============================================
+actor "Khach Hang\n(User - Da Dang Nhap)" as User
+actor "DonHangApi\nHuyDonHangApi\nMuaLaiApi" as API #BBDEFB
+
+' =============================================
+' SYSTEM BOUNDARY
+' =============================================
+rectangle "UC-05: Quan Ly Don Hang" {
+
+    usecase "UC05.1\nXem lich su\ndon hang\n(DonHang.aspx)" as UC_History
+    usecase "UC05.2\nXem chi tiet\ntung don hang" as UC_Detail
+    usecase "UC05.3\nXem trang thai\ndon hang" as UC_Status
+    usecase "UC05.4\nXem danh sach\nSP trong don" as UC_Items
+    usecase "UC05.5\nHuy don hang\n(Chi khi: Cho xac nhan)" as UC_Cancel
+    usecase "UC05.6\nKiem tra trang thai\n= Cho xac nhan" as UC_CheckWaiting
+    usecase "UC05.7\nYeu cau tra hang\n/ hoan tien" as UC_Return
+    usecase "UC05.8\nKiem tra trang thai\n= Hoan thanh" as UC_CheckDone
+    usecase "UC05.9\nKiem tra chinh sach\n7 ngay tra hang" as UC_Check7Days
+    usecase "UC05.10\nMua lai\ndon hang cu" as UC_ReOrder
+    usecase "UC05.11\nThem SP cu\nvao gio hang" as UC_AddToCart
+    usecase "UC05.12\nCong don so luong\nneu da co trong gio" as UC_MergeQty
+
+}
+
+' =============================================
+' ACTOR LINKS
+' =============================================
+User --> UC_History
+User --> UC_Cancel
+User --> UC_Return
+User --> UC_ReOrder
+
+' =============================================
+' INCLUDE / EXTEND
+' =============================================
+UC_History ..> UC_Detail : <<include>>
+UC_Detail  ..> UC_Status : <<include>>
+UC_Detail  ..> UC_Items  : <<include>>
+
+UC_Cancel  ..> UC_CheckWaiting : <<include>>
+
+UC_Return  ..> UC_CheckDone  : <<include>>
+UC_Return  ..> UC_Check7Days : <<include>>
+
+UC_ReOrder  ..> UC_AddToCart : <<include>>
+UC_AddToCart ..> UC_MergeQty : <<extend>>
+
+' =============================================
+' API CALLS
+' =============================================
+UC_History ..> API : GET DonHangApi.ashx
+UC_Cancel  ..> API : POST HuyDonHangApi.ashx\n?action=huy&id={maDonHang}
+UC_Return  ..> API : POST HuyDonHangApi.ashx\n?action=hoanhang&id={maDonHang}
+UC_ReOrder ..> API : GET MuaLaiApi.ashx\n?id={maDonHang}
+
+' =============================================
+' GHI CHU
+' =============================================
+note right of UC_Status
+    <b>Vong doi trang thai don hang:</b>
+    [Cho xac nhan]
+       -> (Admin xac nhan)
+    [Dang xu ly]
+       ->
+    [Dang giao hang]
+       ->
+    [Hoan thanh]
+       -> (trong 7 ngay)
+    [Tra hang/Hoan tien]
+
+    HOAC:
+    [Cho xac nhan] -> [Da huy]
+       (User tu huy)
+end note
+
+note right of UC_Cancel
+    <b>Dieu kien huy don:</b>
+    [OK]  TrangThaiDon = "Cho xac nhan"
+    [LOI] Cac trang thai khac -> Tu choi
+
+    <b>Ket qua:</b>
+    TrangThaiDon = "Da huy"
+end note
+
+note right of UC_Return
+    <b>Dieu kien tra hang:</b>
+    [OK]  TrangThaiDon = "Hoan thanh"
+    [OK]  NgayDat cach hien tai <= 7 ngay
+    [LOI] Qua 7 ngay -> Tu choi
+
+    <b>Ket qua:</b>
+    TrangThaiDon = "Tra hang/Hoan tien"
+end note
+
+note right of UC_ReOrder
+    <b>Luong Mua Lai (MuaLaiApi.ashx):</b>
+    1. Lay ChiTietDonHang cua don cu
+    2. Tim/tao GioHang hien tai
+    3. Voi tung san pham:
+       - Da co trong gio -> cong don SL
+       - Chua co -> them moi
+    4. Chuyen huong -> trang gio hang
+end note
+
+@enduml

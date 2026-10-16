@@ -1,0 +1,151 @@
+@startuml UML_TONG_QUAN
+title BIỂU ĐỒ TỔNG QUÁT HỆ THỐNG WEBSITE BÁN LINH KIỆN XE MÁY (VanDonMotor)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+
+' ======= KHÁCH HÀNG (USER) =======
+actor "Khách hàng\n(User)" as User
+
+' ======= NHÂN VIÊN =======
+actor "Nhân viên\n(Bán hàng/Kho/Hỗ trợ)" as NV
+
+' ======= ADMIN =======
+actor "Quản trị viên\n(Admin)" as Admin
+
+' ======= HỆ THỐNG BÊN NGOÀI =======
+actor "SePay\n(Webhook)" as SePay
+actor "Gmail SMTP\n(Gửi email)" as SMTP
+
+' ======= CÁC HỆ CON =======
+package "Hệ thống VanDonMotor" {
+
+    rectangle "Tầng Trình bày\n(ASPX + JS)" as UI {
+        [index.aspx\nTrang chủ] as P_index
+        [SanPham.aspx\nDanh sách SP] as P_dssp
+        [ChiTietSanPham.aspx\nChi tiết SP] as P_ctsp
+        [ThanhToan.aspx\nThanh toán] as P_tt
+        [DonHang.aspx\nLịch sử đơn] as P_dh
+        [TaiKhoan.aspx\nTài khoản] as P_tk
+        [Admin.aspx\nSPA Quản trị] as P_admin
+        [Dang_nhap.aspx\nĐăng nhập] as P_login
+        [Dang_ky.aspx\nĐăng ký] as P_register
+        [Quen_mat_khau.aspx\nQuên MK] as P_forgot
+    }
+
+    rectangle "Tầng API\n(.ashx - JSON)" as API {
+        [Login/Register/\nPassword API] as A_auth
+        [GioHangApi] as A_cart
+        [DatHangApi] as A_order
+        [DonHangApi] as A_myorder
+        [HuyDonHangApi] as A_cancel
+        [MuaLaiApi] as A_reorder
+        [LinhKienApi] as A_product
+        [DanhGiaApi] as A_review
+        [MaGiamGiaApi] as A_promo
+        [ChatApi] as A_chat
+        [SePayWebhook] as A_webhook
+        [Admin*\n+ QuanLyDonHang\n+ QuanLyKho\n+ ThongKe\n+ QuanLyNguoiDung\n+ QuanLyKhuyenMai\n+ ...] as A_adminapi
+    }
+
+    rectangle "Tầng Tiện ích\n(Utils)" as Utils {
+        [PhanQuyen] as U_perm
+        [PasswordHelper] as U_pass
+        [EmailHelper] as U_email
+        [OtpHelper] as U_otp
+        [MaGiamGiaHelper] as U_promo
+        [NhatKyHelper] as U_log
+    }
+
+    database "Cơ sở dữ liệu\n(SQL Server)" as DB {
+        [NguoiDung] as T_user
+        [LinhKien] as T_product
+        [DanhMuc] as T_cat
+        [DongXe] as T_bike
+        [GioHang +\nChiTietGioHang] as T_cart
+        [DonHang +\nChiTietDonHang] as T_order
+        [DanhGia +\nDanhGiaAn] as T_review
+        [PhienChat +\nTinNhan] as T_chat
+        [MaGiamGia] as T_promo
+        [PhieuKho +\nAnhSanPham +\nTuongThichXe +\nNhatKyHoatDong +\nLichSuDonHang] as T_other
+    }
+}
+
+' ======= LIÊN KẾT NGƯỜI DÙNG -> UI =======
+User --> P_index : Truy cập
+User --> P_dssp : Duyệt SP
+User --> P_ctsp : Xem chi tiết
+User --> P_tt : Thanh toán
+User --> P_dh : Xem đơn
+User --> P_tk : Sửa hồ sơ
+User --> P_login : Đăng nhập
+User --> P_register : Đăng ký
+User --> P_forgot : Quên MK
+
+NV --> P_admin : Quản lý\n(theo phân quyền)
+Admin --> P_admin : Toàn quyền
+
+' ======= UI -> API =======
+P_login --> A_auth : POST
+P_register --> A_auth : POST
+P_forgot --> A_auth : POST
+P_index --> A_product : GET
+P_dssp --> A_product : GET
+P_dssp --> A_cart : add
+P_ctsp --> A_product : GET
+P_ctsp --> A_review : get/add
+P_ctsp --> A_cart : add
+P_tt --> A_promo : check
+P_tt --> A_order : POST
+P_tt --> A_webhook : callback
+P_dh --> A_myorder : GET
+P_dh --> A_cancel : huy/hoanhang
+P_dh --> A_reorder : mua lại
+P_tk --> A_auth : change password
+P_admin --> A_adminapi : CRUD đa tab
+
+' ======= API -> Utils =======
+A_auth --> U_pass : Hash/Verify
+A_auth --> U_email : Gửi email
+A_auth --> U_otp : OTP
+A_order --> U_promo : Kiểm tra mã GG
+A_adminapi --> U_perm : Check quyền
+A_adminapi --> U_log : Ghi nhật ký
+
+' ======= API -> DB =======
+A_auth --> T_user : Đọc/ghi
+A_cart --> T_cart : CRUD
+A_product --> T_product : Đọc
+A_product --> T_cat : Đọc
+A_product --> T_bike : Đọc tương thích
+A_product --> T_other : Ảnh, đánh giá
+A_order --> T_order : Tạo đơn + trừ kho
+A_order --> T_product : Update SoLuongTon
+A_order --> T_promo : Tăng DaDung
+A_myorder --> T_order : Đọc
+A_cancel --> T_order : Update TT
+A_reorder --> T_cart : Thêm vào giỏ
+A_review --> T_review : Đọc/ghi
+A_promo --> T_promo : Đọc + check
+A_chat --> T_chat : Đọc/ghi
+A_adminapi --> T_user : CRUD
+A_adminapi --> T_product : CRUD
+A_adminapi --> T_order : CRUD
+A_adminapi --> T_promo : CRUD
+A_adminapi --> T_other : Kho, ảnh, NK
+
+' ======= WEBHOOK SEPAY =======
+SePay --> A_webhook : POST (transfer)
+A_webhook --> T_order : So khớp MaVanDon
+
+' ======= SMTP =======
+A_auth --> SMTP : Gửi OTP / xác nhận
+
+' ======= CHÚ THÍCH =======
+note right of DB
+    QuanLyLinhKienXeMay
+    Server: Admin-PC
+  end do
+
+@enduml

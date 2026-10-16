@@ -1,0 +1,140 @@
+@startuml UC04_Dat_Hang_Thanh_Toan
+
+' =============================================
+' CAI DAT GIAO DIEN
+' =============================================
+skinparam backgroundColor #F9F0FF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #E1BEE7
+    BorderColor #6A1B9A
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #4A148C
+    ArrowColor #6A1B9A
+}
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #F3E5F5
+    BorderColor #6A1B9A
+    BorderThickness 2
+    FontColor #6A1B9A
+    FontStyle bold
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #6A1B9A
+
+title
+    <b><size:18>UC-04: Dat Hang & Thanh Toan</size></b>
+    <size:12>He Thong Ban Linh Kien Xe May</size>
+    <size:10>(ThanhToan.aspx | DatHangApi.ashx | Bang: DonHang, ChiTietDonHang)</size>
+end title
+
+' =============================================
+' ACTORS
+' =============================================
+actor "Khach Hang\n(User - Da Dang Nhap)" as User
+actor "DatHangApi\n(ASHX Handler)" as OrderAPI #BBDEFB
+
+' =============================================
+' SYSTEM BOUNDARY
+' =============================================
+rectangle "UC-04: Dat Hang & Thanh Toan" {
+
+    usecase "UC04.1\nXem trang\nthanh toan\n(ThanhToan.aspx)" as UC_CheckoutPage
+    usecase "UC04.2\nHien thi thong tin\ngio hang hien tai" as UC_ShowCart
+    usecase "UC04.3\nNhap thong tin\nnguo nhan hang" as UC_FillShipping
+    usecase "UC04.4\nNhap ho ten\nnguoi nhan" as UC_FillName
+    usecase "UC04.5\nNhap so dien thoai\ngiao hang" as UC_FillPhone
+    usecase "UC04.6\nNhap dia chi\ngiao hang" as UC_FillAddress
+    usecase "UC04.7\nChon phuong thuc\nthanh toan" as UC_PayMethod
+    usecase "UC04.8\nThanh toan\ntien mat (COD)" as UC_COD
+    usecase "UC04.9\nThanh toan\nchuyen khoan" as UC_BankTransfer
+    usecase "UC04.10\nKiem tra gio hang\nkhong duoc rong" as UC_CheckCartEmpty
+    usecase "UC04.11\nXac nhan\ndat hang" as UC_PlaceOrder
+    usecase "UC04.12\nTinh tong tien\ntoi gio hang" as UC_CalcTotal
+    usecase "UC04.13\nTao don hang\nmoi trong DB" as UC_CreateOrder
+    usecase "UC04.14\nLuu chi tiet\ndon hang" as UC_SaveOrderDetail
+    usecase "UC04.15\nCap nhat thong tin\nvao ho so nguoi dung" as UC_UpdateProfile
+    usecase "UC04.16\nXoa gio hang\nsau khi dat thanh cong" as UC_ClearCart
+
+}
+
+' =============================================
+' ACTOR LINKS
+' =============================================
+User --> UC_CheckoutPage
+User --> UC_FillShipping
+User --> UC_PayMethod
+User --> UC_PlaceOrder
+
+' =============================================
+' INCLUDE / EXTEND
+' =============================================
+UC_CheckoutPage ..> UC_ShowCart        : <<include>>
+
+UC_FillShipping ..> UC_FillName        : <<include>>
+UC_FillShipping ..> UC_FillPhone       : <<include>>
+UC_FillShipping ..> UC_FillAddress     : <<include>>
+
+UC_PayMethod    ..> UC_COD             : <<extend>>
+UC_PayMethod    ..> UC_BankTransfer    : <<extend>>
+
+UC_PlaceOrder   ..> UC_CheckCartEmpty  : <<include>>
+UC_PlaceOrder   ..> UC_CalcTotal       : <<include>>
+UC_PlaceOrder   ..> UC_CreateOrder     : <<include>>
+UC_PlaceOrder   ..> UC_SaveOrderDetail : <<include>>
+UC_PlaceOrder   ..> UC_UpdateProfile   : <<include>>
+UC_PlaceOrder   ..> UC_ClearCart       : <<include>>
+
+' =============================================
+' API CALLS
+' =============================================
+UC_PlaceOrder --> OrderAPI : POST DatHangApi.ashx\n(ten, sdt, diaChi, ptThanhToan)
+
+' =============================================
+' GHI CHU
+' =============================================
+note right of UC_PlaceOrder
+    <b>Luong xu ly (DatHangApi.ashx):</b>
+    1. Kiem tra Session["User"] != null
+    2. Kiem tra gio hang khong rong
+    3. Tinh tong tien = SUM(SoLuong x GiaBan)
+    4. Cap nhat HoTen, SDT, DiaChi -> NguoiDung
+    5. Tao ban ghi DonHang moi:
+       - TrangThaiDon = "Cho xac nhan"
+       - TrangThaiTT  = "Chua thanh toan"
+    6. INSERT tung dong -> ChiTietDonHang
+    7. DELETE toan bo ChiTietGioHang
+    8. Tra ve { success: true, maDonHang }
+end note
+
+note right of UC_PayMethod
+    <b>Phuong thuc thanh toan:</b>
+    - COD: Thanh toan khi nhan hang
+    - Chuyen khoan ngan hang
+      (Kem anh QR code: qr-code.jpg)
+end note
+
+note bottom of UC_CheckCartEmpty
+    <b>Kiem tra gio hang:</b>
+    Neu gio rong hoac null
+    -> { success: false,
+         message: "Gio hang trong!" }
+    -> Khong cho phep dat hang
+end note
+
+@enduml

@@ -1,0 +1,137 @@
+@startuml UC02_Duyet_San_Pham
+
+' =============================================
+' CAI DAT GIAO DIEN
+' =============================================
+skinparam backgroundColor #F0FFF4
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #C8E6C9
+    BorderColor #2E7D32
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #1B5E20
+    ArrowColor #2E7D32
+}
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #E8F5E9
+    BorderColor #2E7D32
+    BorderThickness 2
+    FontColor #2E7D32
+    FontStyle bold
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #2E7D32
+
+title
+    <b><size:18>UC-02: Duyet & Xem San Pham</size></b>
+    <size:12>He Thong Ban Linh Kien Xe May</size>
+    <size:10>(SanPham.aspx | ChiTietSanPham.aspx | Dieu_khoan.aspx)</size>
+end title
+
+' =============================================
+' ACTORS
+' =============================================
+actor "Khach Vang Lai\n(Guest)" as Guest
+actor "Khach Hang\n(User)" as User
+actor "LinhKienApi\nChiTietSPApi\nDanhMucApi" as API #BBDEFB
+
+' =============================================
+' SYSTEM BOUNDARY
+' =============================================
+rectangle "UC-02: Duyet & Xem San Pham" {
+
+    usecase "UC02.1\nXem trang chu\n(index.aspx)" as UC_Home
+    usecase "UC02.2\nXem danh sach\nlinh kien xe may" as UC_ListProduct
+    usecase "UC02.3\nLoc theo\nDanh muc" as UC_FilterCategory
+    usecase "UC02.4\nLoc theo\nDong xe tuong thich" as UC_FilterBike
+    usecase "UC02.5\nXem chi tiet\nsan pham" as UC_ProductDetail
+    usecase "UC02.6\nXem gia ban\nva gia niem yet" as UC_Price
+    usecase "UC02.7\nXem so luong\nton kho" as UC_Stock
+    usecase "UC02.8\nXem hinh anh\nsan pham" as UC_Image
+    usecase "UC02.9\nXem mo ta\nchi tiet" as UC_Description
+    usecase "UC02.10\nXem nhan hieu\nva hang xe" as UC_Brand
+    usecase "UC02.11\nXem dieu khoan\ndich vu" as UC_Terms
+
+}
+
+' =============================================
+' ACTOR LINKS
+' =============================================
+Guest --> UC_Home
+Guest --> UC_ListProduct
+Guest --> UC_ProductDetail
+Guest --> UC_Terms
+
+User --> UC_Home
+User --> UC_ListProduct
+User --> UC_ProductDetail
+User --> UC_Terms
+
+' =============================================
+' INCLUDE / EXTEND
+' =============================================
+UC_ListProduct   ..> UC_FilterCategory : <<extend>>
+UC_ListProduct   ..> UC_FilterBike     : <<extend>>
+
+UC_ProductDetail ..> UC_Price       : <<include>>
+UC_ProductDetail ..> UC_Stock       : <<include>>
+UC_ProductDetail ..> UC_Image       : <<include>>
+UC_ProductDetail ..> UC_Description : <<include>>
+UC_ProductDetail ..> UC_Brand       : <<include>>
+
+' =============================================
+' API CALLS
+' =============================================
+UC_ListProduct   --> API : GET LinhKienApi.ashx\nGET DanhMucApi.ashx
+UC_ProductDetail --> API : GET ChiTietSPApi.ashx\n?id={maLinhKien}
+
+' =============================================
+' GHI CHU
+' =============================================
+note right of UC_ListProduct
+    <b>Hien thi danh sach:</b>
+    - Ten linh kien
+    - Hinh anh san pham
+    - Gia ban (GiaBan)
+    - Gia niem yet (GiaNiemYet)
+    - Ten hang xe
+    - Trang thai con hang
+end note
+
+note right of UC_ProductDetail
+    <b>Chi tiet SP qua API:</b>
+    GET ChiTietSPApi.ashx?id={id}
+    -> TenLinhKien
+    -> GiaBan, HinhAnh
+    -> MoTa, SoLuongTon
+end note
+
+note bottom of UC_FilterCategory
+    <b>Danh muc linh kien:</b>
+    Dong co, He thong phanh,
+    He thong dien, Lop xe,
+    Nhong xich, v.v.
+end note
+
+note bottom of UC_FilterBike
+    <b>Dong xe tuong thich:</b>
+    Honda Wave, Yamaha Sirius,
+    Suzuki Axelo, v.v.
+end note
+
+@enduml

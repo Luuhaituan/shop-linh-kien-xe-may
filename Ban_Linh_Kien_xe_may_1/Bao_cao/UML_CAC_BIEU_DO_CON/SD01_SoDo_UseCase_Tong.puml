@@ -1,0 +1,100 @@
+@startuml SD01_UseCase_Tong
+title BIỂU ĐỒ USE CASE TỔNG (Tách ra từ biểu đồ tổng quát)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+left to right direction
+
+actor "Khách hàng" as KH
+actor "Nhân viên" as NV
+actor "Quản trị viên" as AD
+actor "SePay\n(Bank)" as Bank
+
+rectangle "Hệ thống VanDonMotor" {
+
+    ' KHÁCH HÀNG
+    package "Mua sắm" {
+        usecase "Duyệt sản phẩm" as UC_Duyet
+        usecase "Xem chi tiết SP" as UC_CTSP
+        usecase "Đánh giá SP" as UC_DG
+        usecase "Quản lý giỏ hàng" as UC_GH
+        usecase "Đặt hàng /\nThanh toán" as UC_DH
+        usecase "Theo dõi đơn hàng" as UC_TTDH
+        usecase "Hủy đơn" as UC_Huy
+        usecase "Trả hàng" as UC_Tra
+        usecase "Mua lại đơn cũ" as UC_MuaLai
+    }
+
+    package "Tài khoản" {
+        usecase "Đăng ký" as UC_DK
+        usecase "Đăng nhập" as UC_DN
+        usecase "Quên mật khẩu" as UC_QMK
+        usecase "Cập nhật hồ sơ" as UC_CN
+        usecase "Đổi mật khẩu" as UC_DMK
+        usecase "Chat hỗ trợ" as UC_Chat
+    }
+
+    ' ADMIN / NHÂN VIÊN
+    package "Quản trị - Quản lý" {
+        usecase "QL Sản phẩm +\nẢnh + Dòng xe" as UC_QLSP
+        usecase "QL Danh mục" as UC_QLDM
+        usecase "QL Khách hàng" as UC_QLKH
+        usecase "QL Nhân viên" as UC_QLNV
+        usecase "QL Đơn hàng +\nVận đơn" as UC_QLDH
+        usecase "QL Khuyến mãi" as UC_QLKM
+        usecase "QL Kho" as UC_QLKho
+        usecase "QL Đánh giá" as UC_QLDG
+        usecase "Thống kê\ndoanh thu" as UC_TK
+        usecase "Nhật ký\nhoạt động" as UC_NK
+        usecase "Trả lời chat" as UC_ChatAdmin
+    }
+}
+
+' KHÁCH HÀNG
+KH --> UC_DK
+KH --> UC_DN
+KH --> UC_QMK
+KH --> UC_Duyet
+KH --> UC_CTSP
+KH --> UC_DG
+KH --> UC_GH
+KH --> UC_DH
+KH --> UC_TTDH
+KH --> UC_Huy
+KH --> UC_Tra
+KH --> UC_MuaLai
+KH --> UC_CN
+KH --> UC_DMK
+KH --> UC_Chat
+
+UC_Duyet ..> UC_CTSP : <<include>>
+UC_DH ..> UC_GH : <<include>>
+UC_DH ..> UC_TTDH : <<include>>
+UC_Tra ..> UC_TTDH : <<extend>>
+
+' NHÂN VIÊN
+NV --> UC_ChatAdmin
+NV --> UC_QLDH
+NV --> UC_QLKH
+NV --> UC_QLKho
+NV --> UC_TK
+NV --> UC_NK
+
+' ADMIN (full)
+AD --> UC_QLSP
+AD --> UC_QLDM
+AD --> UC_QLKH
+AD --> UC_QLNV
+AD --> UC_QLDH
+AD --> UC_QLKM
+AD --> UC_QLKho
+AD --> UC_QLDG
+AD --> UC_TK
+AD --> UC_NK
+AD --> UC_ChatAdmin
+
+' SEPAY
+Bank --> UC_DH : Webhook CK\nxác nhận TT
+
+@enduml

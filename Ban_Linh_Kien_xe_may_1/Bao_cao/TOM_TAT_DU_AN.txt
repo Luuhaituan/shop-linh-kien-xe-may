@@ -1,0 +1,185 @@
+================================================================
+   TÓM TẮT DỰ ÁN: WEBSITE BÁN LINH KIỆN XE MÁY (VanDonMotor)
+   (Phiên bản đầy đủ nhưng cô đọng)
+================================================================
+
+1. THÔNG TIN CHUNG
+--------------------
+- Tên dự án   : VanDonMotor - Bán linh kiện xe máy trực tuyến
+- Đường dẫn   : d:\Mon_thuong_mai_dien_tu\Ban_Linh_Kien_xe_may_1\
+                Ban_Linh_Kien_xe_may_1\
+- Công nghệ   : ASP.NET WebForms 4.7.2 (C#)
+- ORM         : Entity Framework 6.5.2 (Database-First, EDMX)
+- CSDL        : SQL Server - DB: QuanLyLinhKienXeMay
+                (Server: Admin-PC, User: motozone_user)
+- API         : JSON qua HTTP Handler (.ashx)
+- JS/CSS      : jQuery + SweetAlert2 + Google reCAPTCHA v2
+- Email       : SMTP Gmail (luuhaituanl@gmail.com)
+- Thanh toán  : SePay Webhook (chuyển khoản ngân hàng)
+- Mục tiêu   : Website thương mại điện tử bán linh kiện xe máy
+                (mặt cửa hàng cho khách + khu vực quản trị)
+
+
+2. CẤU TRÚC THƯ MỤC TỔNG QUAN
+--------------------------------
+Dự án gồm 3 tầng chính:
+
+  Tầng 1: Trình bày (ASPX + JS + CSS)
+    - 12 trang ASPX ở root: index, SanPham, ChiTietSanPham,
+      ThanhToan, DonHang, TaiKhoan, Admin, Dang_nhap, Dang_ky,
+      Quen_mat_khau, Dang_xuat, Dieu_khoan
+    - File JS: app.js (22KB), auth.js (2.7KB)
+    - File CSS: style.css (29KB), auth.css (12KB)
+    - Thư mục images/ chứa ảnh sản phẩm + qr-code.jpg
+
+  Tầng 2: API (.ashx trả JSON)
+    - 30+ API endpoint trong thư mục API/
+    - Chia 2 nhóm: Khách hàng (~14 API) và Quản trị (~15 API)
+
+  Tầng 3: Dữ liệu + Tiện ích
+    - Models/    : 18 file entity (EDMX + 11 lớp partial)
+    - Utils/     : 6 lớp tiện ích (PhanQuyen, EmailHelper,
+                  OtpHelper, PasswordHelper, MaGiamGiaHelper,
+                  NhatKyHelper)
+    - SQL/       : 3 script nâng cấp CSDL
+    - Web.config : Connection string + cấu hình SMTP
+
+
+3. CƠ SỞ DỮ LIỆU (18 BẢNG)
+---------------------------
+Nhóm người dùng:
+  - NguoiDung        : Tài khoản + VaiTro + TrangThai
+
+Nhóm sản phẩm:
+  - DanhMuc          : Phân loại linh kiện
+  - LinhKien         : Sản phẩm (giá, tồn kho, hình ảnh…)
+  - DongXe           : Dòng xe tương thích
+  - TuongThichXe     : Bảng n-n LinhKien ↔ DongXe
+  - AnhSanPham       : Thư viện ảnh (nhiều ảnh/sản phẩm)
+  - PhieuKho         : Lịch sử nhập/xuất/điều chỉnh kho
+
+Nhóm đơn hàng:
+  - GioHang + ChiTietGioHang
+  - DonHang + ChiTietDonHang (có MaVanDon, GiamGia, MaGiamGiaCode)
+  - LichSuDonHang    : Lịch sử thay đổi trạng thái đơn
+
+Nhóm đánh giá & khuyến mãi:
+  - DanhGia + DanhGiaAn : Đánh giá + đánh giá bị ẩn
+  - MaGiamGia         : Mã giảm giá (PhanTram/SoTien, hạn, lượt)
+
+Nhóm chat & hệ thống:
+  - PhienChat + TinNhan : Chat hỗ trợ (có DaDocKhach/DaDocNhanVien)
+  - NhatKyHoatDong   : Log hoạt động Admin/NV (có IP)
+
+
+4. PHÂN QUYỀN (3 CẤP - 5 VAI TRÒ)
+-----------------------------------
+- Admin            : Toàn quyền (12 tab quản trị)
+- NhanVienBanHang  : Quản lý đơn hàng + khách hàng
+- NhanVienKho      : Quản lý tồn kho
+- NhanVienHoTro    : Chat với khách
+- User             : Chỉ dùng mặt cửa hàng
+
+Quyền được kiểm tra qua Utils/PhanQuyen.CoQuyen(VaiTro, tab).
+Mỗi API admin đều kiểm tra Session["User"] + VaiTro trước khi xử lý.
+
+
+5. CÁC TÍNH NĂNG CHÍNH (ĐÃ HOÀN THÀNH 100%)
+---------------------------------------------
+PHÍA KHÁCH HÀNG:
+  [1] Đăng ký / Đăng nhập / Đăng xuất / Quên mật khẩu
+      (tích hợp Google reCAPTCHA v2 chống bot)
+  [2] Duyệt sản phẩm theo danh mục + dòng xe
+  [3] Xem chi tiết + đánh giá (chỉ người đã mua mới được đánh giá)
+  [4] Giỏ hàng: thêm/sửa/xóa, cập nhật số lượng
+  [5] Đặt hàng + áp dụng mã giảm giá (validate server-side)
+  [6] Thanh toán: COD hoặc Chuyển khoản qua SePay
+      (tự động cập nhật khi SePay gọi webhook)
+  [7] Quản lý đơn hàng: xem lịch sử, hủy (khi "Chờ xác nhận"),
+      trả hàng (trong 7 ngày), mua lại
+  [8] Cập nhật thông tin cá nhân + đổi mật khẩu
+  [9] Chat hỗ trợ trực tiếp với nhân viên (có đánh dấu đã đọc)
+
+PHÍA QUẢN TRỊ (12 TAB TRONG Admin.aspx):
+  [1]  Quản lý Sản phẩm (CRUD + upload ảnh + dòng xe tương thích)
+  [2]  Quản lý Danh mục (CRUD, chặn xóa khi còn sản phẩm)
+  [3]  Quản lý Dòng xe (CRUD + gán SP tương thích)
+  [4]  Quản lý Khách hàng (DS, khóa/mở TK, xem LS mua)
+  [5]  Quản lý Người dùng (CRUD NV, reset MK, đổi vai trò)
+  [6]  Quản lý Đơn hàng (DS, cập nhật TT, vận đơn, hủy)
+  [7]  Quản lý Khuyến mãi (CRUD mã GG, có hạn, giới hạn lượt)
+  [8]  Quản lý Kho (tồn kho, nhập/xuất/điều chỉnh, lịch sử)
+  [9]  Quản lý Đánh giá (ẩn/hiện/xóa)
+  [10] Thống kê (doanh thu theo ngày, top SP/KH theo khoảng TG)
+  [11] Nhật ký hoạt động (log + IP)
+  [12] Chat (xem & trả lời tất cả phiên chat)
+
+
+6. CÁC LUỒNG NGHIỆP VỤ QUAN TRỌNG
+-----------------------------------
+A) ĐẶT HÀNG:
+   Giỏ hàng → Nhập thông tin → (Tùy chọn) nhập mã GG
+   → Server validate mã → Tạo DonHang + MaVanDon (VD+timestamp)
+   → Copy ChiTietGioHang → ChiTietDonHang → Trừ SoLuongTon
+   → Xóa giỏ → Trả MaVanDon cho client
+   → Nếu CK: SePay gọi webhook → Server đối chiếu → Cập nhật
+
+B) CHAT HỖ TRỢ:
+   Khách tạo PhienChat → Gửi TinNhan (DaDocKhach=1, DaDocNhanVien=0)
+   → NV đọc (UPDATE DaDocNhanVien=1) → NV trả lời
+   (Đánh dấu đã đọc riêng cho từng phía)
+
+C) QUẢN LÝ ĐƠN (Admin):
+   Xem DS đơn → Cập nhật trạng thái (có validate luồng hợp lệ)
+   → Ghi LichSuDonHang + NhatKyHoatDong
+   Trạng thái đơn: Chờ xác nhận → Đang chuẩn bị → Đang giao
+                   → Đã giao (COD tự động "Đã thanh toán")
+                   → Hoàn thành | Đã hủy (có lý do)
+
+D) MÃ GIẢM GIÁ:
+   Server check: tồn tại + đang bật + trong hạn + còn lượt
+   + đạt giá trị đơn tối thiểu + user chưa dùng mã này
+   → Tính TienGiam (PhanTram có GiamToiDa, SoTien cố định)
+   → Khi đặt hàng thành công: UPDATE DaDung = DaDung + 1
+
+
+7. ĐIỂM NỔI BẬT VỀ KỸ THUẬT
+------------------------------
+- Mô hình 3-tầng rõ ràng: ASPX (UI) → ASHX (API) → EDMX (DB)
+- Phân quyền chi tiết theo từng tab chức năng
+- Mật khẩu được hash (PasswordHelper) chứ không lưu plaintext
+- Session["User"] lưu NguoiDung object (dùng MaNguoiDung để truy vấn)
+- Tự động trừ tồn kho khi đặt hàng, có phiếu kho (PhieuKho)
+- Đánh dấu đã đọc độc lập cho khách và nhân viên trong chat
+- SePay Webhook tự động đối chiếu MaVanDon + số tiền
+- Tất cả API đều trả JSON, validate Session trước khi xử lý
+- Admin có nhật ký hoạt động (ghi IP) cho mọi thao tác
+
+
+8. THỐNG KÊ DỰ ÁN
+-------------------
+- Tổng thư mục con : 11
+- Tổng file mã nguồn : 80+ file
+- Trang ASPX        : 12 trang
+- API ASHX          : 30+ endpoint
+- Bảng trong DB     : 18 bảng
+- Tính năng đã làm  : 9 (khách) + 12 (admin) = 21 module
+
+
+9. CÁC BIỂU ĐỒ PLANTUML ĐÃ VẼ (trong folder Bao_cao/)
+-------------------------------------------------------
+- 1 biểu đồ tổng quát: UML_TONG_QUAN.puml
+- 11 biểu đồ con:
+   SD01 UseCase tổng        SD07 Sequence đặt hàng
+   SD02 Sơ đồ lớp          SD08 Sequence SePay
+   SD03 Sơ đồ triển khai    SD09 Sequence chat
+   SD04 Sơ đồ thành phần    SD10 Sequence admin QL đơn
+   SD05 Activity đặt hàng   SD11 Activity đăng ký/nhập
+   SD06 Activity thanh toán
+
+Cách xem: Mở https://www.plantuml.com/ → Paste code → Render
+
+
+================================================================
+           KẾT THÚC TÓM TẮT - ĐẦY ĐỦ & CÔ ĐỌNG
+================================================================

@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Use Case Diagram – Hệ Thống Bán Linh Kiện Xe Máy</title>
+  <meta name="description" content="Sơ đồ Use Case toàn bộ hệ thống thương mại điện tử bán linh kiện xe máy xây dựng bằng ASP.NET WebForms." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* =========================================================
+       DESIGN TOKENS
+    ========================================================= */
+    :root {
+      --bg:        #0d0f1a;
+      --bg2:       #13162b;
+      --bg3:       #1a1e36;
+      --surface:   #1f2440;
+      --border:    rgba(99,120,255,0.18);
+      --primary:   #6378ff;
+      --primary2:  #8b9fff;
+      --accent:    #ff6b9d;
+      --accent2:   #ffb347;
+      --green:     #4ade80;
+      --teal:      #2dd4bf;
+      --purple:    #a78bfa;
+      --text:      #e2e8f8;
+      --text2:     #8892b0;
+      --text3:     #4a5280;
+      --radius:    14px;
+      --radius-sm: 8px;
+      --glow:      0 0 20px rgba(99,120,255,0.35);
+
+      /* package colours */
+      --c-account: #6378ff;
+      --c-product: #2dd4bf;
+      --c-cart:    #ffb347;
+      --c-order:   #ff6b9d;
+      --c-manage:  #4ade80;
+      --c-admin:   #a78bfa;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* =========================================================
+       BACKGROUND BLOBS
+    ========================================================= */
+    .bg-blobs {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .blob {
+      position: absolute; border-radius: 50%; filter: blur(100px); opacity: .12;
+      animation: floatBlob 18s ease-in-out infinite;
+    }
+    .blob-1 { width: 600px; height: 600px; background: var(--primary); top: -150px; left: -150px; animation-delay: 0s; }
+    .blob-2 { width: 500px; height: 500px; background: var(--accent); bottom: -100px; right: -100px; animation-delay: -6s; }
+    .blob-3 { width: 400px; height: 400px; background: var(--teal); top: 40%; left: 40%; animation-delay: -12s; }
+    @keyframes floatBlob {
+      0%,100% { transform: translate(0,0) scale(1); }
+      33% { transform: translate(30px,-40px) scale(1.05); }
+      66% { transform: translate(-20px,20px) scale(.97); }
+    }
+
+    /* =========================================================
+       LAYOUT
+    ========================================================= */
+    .container { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* =========================================================
+       HEADER
+    ========================================================= */
+    header {
+      text-align: center;
+      padding: 60px 0 48px;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(99,120,255,.15); border: 1px solid rgba(99,120,255,.3);
+      color: var(--primary2); font-size: 13px; font-weight: 600; letter-spacing: .6px;
+      padding: 6px 16px; border-radius: 999px; text-transform: uppercase; margin-bottom: 24px;
+    }
+    .badge-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #fff 0%, var(--primary2) 50%, var(--accent) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      margin-bottom: 16px;
+    }
+    .subtitle {
+      color: var(--text2); font-size: 16px; line-height: 1.7; max-width: 680px; margin: 0 auto 40px;
+    }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 48px;
+    }
+    .stat-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 10px 20px; border-radius: 999px;
+      font-size: 14px; font-weight: 600;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .stat-chip:hover { transform: translateY(-2px); box-shadow: var(--glow); }
+    .stat-chip .num { color: var(--primary2); font-size: 18px; font-weight: 800; }
+    .stat-chip .lbl { color: var(--text2); }
+
+    /* =========================================================
+       TABS NAV
+    ========================================================= */
+    .tabs-wrap {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,15,26,.85); backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      overflow-x: auto;
+    }
+    .tabs {
+      display: flex; gap: 4px; max-width: 1400px; margin: 0 auto;
+      padding: 10px 0;
+    }
+    .tab-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 18px; border-radius: var(--radius-sm);
+      border: none; background: transparent; color: var(--text2);
+      font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: all .2s;
+    }
+    .tab-btn:hover { background: var(--surface); color: var(--text); }
+    .tab-btn.active {
+      background: var(--primary); color: #fff;
+      box-shadow: 0 0 16px rgba(99,120,255,.5);
+    }
+    .tab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* =========================================================
+       DIAGRAM CANVAS
+    ========================================================= */
+    .diagram-section { margin-top: 48px; }
+
+    .section-title {
+      display: flex; align-items: center; gap: 12px;
+      font-size: 20px; font-weight: 700; margin-bottom: 32px;
+    }
+    .section-title::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border), transparent);
+    }
+
+    /* =========================================================
+       ACTORS STRIP
+    ========================================================= */
+    .actors-strip {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-bottom: 48px;
+    }
+    .actor-card {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 20px 28px; border-radius: var(--radius);
+      transition: transform .25s, box-shadow .25s;
+      cursor: default; min-width: 130px;
+    }
+    .actor-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(0,0,0,.4); }
+    .actor-icon {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+    }
+    .actor-name { font-size: 13px; font-weight: 600; text-align: center; color: var(--text); }
+    .actor-role { font-size: 11px; color: var(--text2); text-align: center; }
+
+    /* =========================================================
+       MAIN USE CASE DIAGRAM SVG WRAPPER
+    ========================================================= */
+    .diagram-wrapper {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden;
+      box-shadow: 0 20px 80px rgba(0,0,0,.5);
+    }
+    #main-diagram-svg {
+      width: 100%; display: block;
+    }
+
+    /* =========================================================
+       PACKAGE GRID (overview)
+    ========================================================= */
+    .pkg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+
+    .pkg-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform .25s, box-shadow .25s;
+    }
+    .pkg-card:hover { transform: translateY(-6px); box-shadow: 0 16px 60px rgba(0,0,0,.45); }
+
+    .pkg-header {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 22px;
+    }
+    .pkg-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .pkg-title { font-size: 15px; font-weight: 700; line-height: 1.3; }
+    .pkg-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+    .pkg-body { padding: 0 22px 18px; }
+    .uc-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .uc-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 14px; border-radius: var(--radius-sm);
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      transition: background .2s, transform .2s;
+      cursor: default;
+    }
+    .uc-item:hover { background: rgba(99,120,255,.1); border-color: rgba(99,120,255,.25); transform: translateX(4px); }
+    .uc-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; font-weight: 600;
+      padding: 2px 7px; border-radius: 4px;
+      flex-shrink: 0; margin-top: 1px;
+      color: #fff; opacity: .85;
+    }
+    .uc-text { font-size: 13px; line-height: 1.5; color: var(--text); }
+    .uc-sub  { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+    /* Relation badges */
+    .rel-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 600; padding: 1px 7px;
+      border-radius: 4px; margin-left: 6px; vertical-align: middle;
+    }
+    .rel-inc { background: rgba(99,120,255,.25); color: var(--primary2); }
+    .rel-ext { background: rgba(255,107,157,.2); color: #ff9cc5; }
+
+    /* =========================================================
+       RELATIONSHIP TABLE
+    ========================================================= */
+    .rel-table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-top: 48px;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: var(--bg3); }
+    thead th {
+      padding: 14px 18px; text-align: left;
+      font-size: 12px; font-weight: 700; letter-spacing: .6px;
+      text-transform: uppercase; color: var(--text2);
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      transition: background .15s;
+    }
+    tbody tr:hover { background: rgba(99,120,255,.07); }
+    tbody td { padding: 12px 18px; font-size: 13px; color: var(--text2); }
+    tbody td:first-child { color: var(--text); font-weight: 500; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    }
+    .pill-guest  { background: rgba(148,163,184,.15); color: #94a3b8; }
+    .pill-user   { background: rgba(255,179,71,.15);  color: var(--accent2); }
+    .pill-admin  { background: rgba(167,139,250,.15); color: var(--purple); }
+
+    /* =========================================================
+       FLOW DIAGRAM
+    ========================================================= */
+    .flow-row {
+      display: flex; align-items: flex-start; gap: 16px;
+      padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .flow-row:last-child { border-bottom: none; }
+    .flow-actor {
+      flex-shrink: 0; width: 120px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      padding: 12px 8px; border-radius: var(--radius-sm);
+    }
+    .flow-actor span { font-size: 11px; font-weight: 600; text-align: center; }
+    .flow-ucs { display: flex; flex-wrap: wrap; gap: 8px; flex: 1; align-items: flex-start; }
+    .flow-uc {
+      font-size: 12px; padding: 6px 12px; border-radius: var(--radius-sm);
+      border: 1px solid; font-weight: 500; white-space: nowrap;
+      transition: transform .15s, box-shadow .15s;
+      cursor: default;
+    }
+    .flow-uc:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+
+    /* =========================================================
+       LEGEND
+    ========================================================= */
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      padding: 20px 24px; background: var(--bg3);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      margin-top: 32px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .legend-line {
+      width: 36px; height: 2px; border-radius: 1px;
+    }
+    .legend-arrow { width: 36px; height: 2px; position: relative; }
+    .legend-arrow::after { content:'▶'; position:absolute; right:-2px; top:-7px; font-size:10px; }
+
+    /* =========================================================
+       TAB CONTENT
+    ========================================================= */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* =========================================================
+       MAIN SVG DIAGRAM
+    ========================================================= */
+    .system-box {
+      stroke: var(--primary); stroke-width: 2; fill: none; rx: 16;
+    }
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+    @media (max-width: 768px) {
+      .pkg-grid { grid-template-columns: 1fr; }
+      .actors-strip { gap: 10px; }
+      .actor-card { min-width: 100px; padding: 14px 16px; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- Background -->
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<!-- ============================================================
+     STICKY TABS
+============================================================ -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview" id="tab-overview">
+      <span class="tab-dot" style="background:#6378ff"></span> Tổng quan
+    </button>
+    <button class="tab-btn" data-tab="diagram" id="tab-diagram">
+      <span class="tab-dot" style="background:#2dd4bf"></span> Sơ đồ chính
+    </button>
+    <button class="tab-btn" data-tab="packages" id="tab-packages">
+      <span class="tab-dot" style="background:#ffb347"></span> Chi tiết Use Case
+    </button>
+    <button class="tab-btn" data-tab="actors" id="tab-actors">
+      <span class="tab-dot" style="background:#ff6b9d"></span> Actors & Quyền
+    </button>
+    <button class="tab-btn" data-tab="relations" id="tab-relations">
+      <span class="tab-dot" style="background:#a78bfa"></span> Quan hệ
+    </button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badge"><span class="badge-dot"></span>ASP.NET WebForms · Entity Framework · SQL Server</div>
+    <h1>Use Case Diagram<br/>Hệ Thống Bán Linh Kiện Xe Máy</h1>
+    <p class="subtitle">Toàn bộ 35 use case được phân nhóm thành 6 gói chức năng, phục vụ 3 loại actor chính trong hệ thống thương mại điện tử.</p>
+    <div class="stats-bar">
+      <div class="stat-chip"><span class="num">35</span><span class="lbl">Use Cases</span></div>
+      <div class="stat-chip"><span class="num">6</span><span class="lbl">Packages</span></div>
+      <div class="stat-chip"><span class="num">5</span><span class="lbl">Actors</span></div>
+      <div class="stat-chip"><span class="num">11</span><span class="lbl">Trang ASPX</span></div>
+      <div class="stat-chip"><span class="num">9</span><span class="lbl">API Endpoints</span></div>
+      <div class="stat-chip"><span class="num">11</span><span class="lbl">Bảng CSDL</span></div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       TAB: OVERVIEW
+  ============================================================ -->
+  <div class="tab-content active" id="content-overview">
+
+    <div class="section-title">
+      <span>🎯</span> Actors trong hệ thống
+    </div>
+
+    <div class="actors-strip">
+      <div class="actor-card">
+        <div class="actor-icon" style="background:rgba(148,163,184,.15)">👤</div>
+        <div class="actor-name">Khách Vãng Lai</div>
+        <div class="actor-role">Guest – Chưa đăng nhập</div>
+      </div>
+      <div class="actor-card">
+        <div class="actor-icon" style="background:rgba(255,179,71,.15)">🛒</div>
+        <div class="actor-name">Khách Hàng</div>
+        <div class="actor-role">User – Đã đăng nhập</div>
+      </div>
+      <div class="actor-card">
+        <div class="actor-icon" style="background:rgba(167,139,250,.15)">🛡️</div>
+        <div class="actor-name">Quản Trị Viên</div>
+        <div class="actor-role">Admin – Toàn quyền</div>
+      </div>
+      <div class="actor-card">
+        <div class="actor-icon" style="background:rgba(45,212,191,.15)">🤖</div>
+        <div class="actor-name">Google reCAPTCHA</div>
+        <div class="actor-role">External – Anti-bot</div>
+      </div>
+      <div class="actor-card">
+        <div class="actor-icon" style="background:rgba(99,120,255,.15)">📧</div>
+        <div class="actor-name">Hệ Thống Email</div>
+        <div class="actor-role">External – Thông báo</div>
+      </div>
+    </div>
+
+    <!-- Overview grid of packages -->
+    <div class="section-title"><span>📦</span> 6 Gói chức năng chính</div>
+    <div class="pkg-grid">
+
+      <!-- UC-01 -->
+      <div class="pkg-card" style="border-top: 3px solid var(--c-account)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(99,120,255,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(99,120,255,.2)">🔑</div>
+          <div>
+            <div class="pkg-title">UC-01: Quản Lý Tài Khoản</div>
+            <div class="pkg-sub">10 use cases · Đăng nhập / Đăng ký / Bảo mật</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.1</span><div><div class="uc-text">Xem trang chủ</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.2</span><div><div class="uc-text">Đăng ký tài khoản</div><div class="uc-sub">«include» UC01.7, 01.8, 01.9</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.3</span><div><div class="uc-text">Đăng nhập</div><div class="uc-sub">«include» reCAPTCHA</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.4</span><div><div class="uc-text">Đăng xuất</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.5</span><div><div class="uc-text">Quên mật khẩu</div><div class="uc-sub">«include» UC01.10 xác minh danh tính</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.6</span><div><div class="uc-text">Cập nhật thông tin cá nhân</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.7</span><div><div class="uc-text">Kiểm tra trùng tên đăng nhập</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.8</span><div><div class="uc-text">Kiểm tra trùng Email / SĐT</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.9</span><div><div class="uc-text">Xác minh reCAPTCHA</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.10</span><div><div class="uc-text">Xác minh danh tính (TênĐN + Email)</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- UC-02 -->
+      <div class="pkg-card" style="border-top: 3px solid var(--c-product)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(45,212,191,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(45,212,191,.2)">🛵</div>
+          <div>
+            <div class="pkg-title">UC-02: Duyệt &amp; Xem Sản Phẩm</div>
+            <div class="pkg-sub">6 use cases · Catalog &amp; Chi tiết</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.1</span><div><div class="uc-text">Xem danh sách sản phẩm</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.2</span><div><div class="uc-text">Xem theo danh mục</div><div class="uc-sub">«extend» UC02.1</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.3</span><div><div class="uc-text">Xem chi tiết sản phẩm</div><div class="uc-sub">«include» UC02.4, 02.5</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.4</span><div><div class="uc-text">Xem giá &amp; tồn kho</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.5</span><div><div class="uc-text">Xem hình ảnh sản phẩm</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.6</span><div><div class="uc-text">Xem điều khoản dịch vụ</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- UC-03 -->
+      <div class="pkg-card" style="border-top: 3px solid var(--c-cart)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(255,179,71,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(255,179,71,.2)">🛒</div>
+          <div>
+            <div class="pkg-title">UC-03: Quản Lý Giỏ Hàng</div>
+            <div class="pkg-sub">5 use cases · Shopping Cart</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-cart)">UC03.1</span><div><div class="uc-text">Thêm sản phẩm vào giỏ</div><div class="uc-sub">«extend» UC03.5</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-cart)">UC03.2</span><div><div class="uc-text">Xem giỏ hàng</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-cart)">UC03.3</span><div><div class="uc-text">Cập nhật số lượng trong giỏ</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-cart)">UC03.4</span><div><div class="uc-text">Xóa sản phẩm khỏi giỏ</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-cart)">UC03.5</span><div><div class="uc-text">Tự tạo giỏ hàng mới cho user</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- UC-04 -->
+      <div class="pkg-card" style="border-top: 3px solid var(--c-order)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(255,107,157,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(255,107,157,.2)">💳</div>
+          <div>
+            <div class="pkg-title">UC-04: Đặt Hàng &amp; Thanh Toán</div>
+            <div class="pkg-sub">7 use cases · Checkout Flow</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.1</span><div><div class="uc-text">Xem trang thanh toán</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.2</span><div><div class="uc-text">Nhập thông tin giao hàng</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.3</span><div><div class="uc-text">Chọn phương thức thanh toán</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.4</span><div><div class="uc-text">Xác nhận đặt hàng</div><div class="uc-sub">«include» UC04.5, 04.6, 04.7</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.5</span><div><div class="uc-text">Tính tổng tiền tự động</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.6</span><div><div class="uc-text">Lưu thông tin vào hồ sơ</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.7</span><div><div class="uc-text">Xóa giỏ hàng sau đặt hàng</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- UC-05 -->
+      <div class="pkg-card" style="border-top: 3px solid var(--c-manage)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(74,222,128,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(74,222,128,.2)">📦</div>
+          <div>
+            <div class="pkg-title">UC-05: Quản Lý Đơn Hàng</div>
+            <div class="pkg-sub">6 use cases · Order Management</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.1</span><div><div class="uc-text">Xem lịch sử đơn hàng</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.2</span><div><div class="uc-text">Xem chi tiết đơn hàng</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.3</span><div><div class="uc-text">Hủy đơn hàng (Chờ xác nhận)</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.4</span><div><div class="uc-text">Yêu cầu trả hàng / hoàn tiền</div><div class="uc-sub">«include» UC05.5</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.5</span><div><div class="uc-text">Kiểm tra chính sách 7 ngày</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.6</span><div><div class="uc-text">Mua lại đơn hàng cũ</div><div class="uc-sub">«include» UC03.1</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- UC-06 -->
+      <div class="pkg-card" style="border-top: 3px solid var(--c-admin)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(167,139,250,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(167,139,250,.2)">🛡️</div>
+          <div>
+            <div class="pkg-title">UC-06: Quản Trị Hệ Thống</div>
+            <div class="pkg-sub">6 use cases · Admin Panel</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.1</span><div><div class="uc-text">Đăng nhập Admin</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.2</span><div><div class="uc-text">Quản lý Sản phẩm (CRUD)</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.3</span><div><div class="uc-text">Quản lý Đơn hàng</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.4</span><div><div class="uc-text">Quản lý Người dùng</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.5</span><div><div class="uc-text">Cập nhật trạng thái đơn hàng</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.6</span><div><div class="uc-text">Quản lý Danh mục</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+    </div><!-- /pkg-grid -->
+
+  </div><!-- /overview -->
+
+  <!-- ============================================================
+       TAB: MAIN SVG DIAGRAM
+  ============================================================ -->
+  <div class="tab-content" id="content-diagram">
+    <div class="section-title"><span>🗂️</span> Sơ đồ Use Case tổng thể</div>
+    <div class="diagram-wrapper">
+      <svg id="main-diagram-svg" viewBox="0 0 1300 1080" xmlns="http://www.w3.org/2000/svg" font-family="Inter,sans-serif">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#6378ff"/>
+          </marker>
+          <marker id="arrow-gray" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#8892b0"/>
+          </marker>
+          <marker id="arrow-acc" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#ff6b9d"/>
+          </marker>
+          <filter id="glow-blue" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <!-- gradient defs -->
+          <linearGradient id="grad-bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1a1e36"/>
+            <stop offset="100%" stop-color="#0d0f1a"/>
+          </linearGradient>
+          <linearGradient id="grad-sys" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#1f2440"/>
+            <stop offset="100%" stop-color="#13162b"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Background -->
+        <rect width="1300" height="1080" fill="url(#grad-bg)"/>
+
+        <!-- Title -->
+        <text x="650" y="40" text-anchor="middle" font-size="18" font-weight="800" fill="#e2e8f8">USE CASE DIAGRAM – Hệ Thống Bán Linh Kiện Xe Máy</text>
+        <text x="650" y="60" text-anchor="middle" font-size="11" fill="#8892b0">ASP.NET WebForms · Entity Framework · SQL Server</text>
+
+        <!-- ─── SYSTEM BOUNDARY ─── -->
+        <rect x="220" y="80" width="860" height="940" rx="16" fill="url(#grad-sys)" stroke="#6378ff" stroke-width="2" stroke-dasharray="6,3" opacity="0.7"/>
+        <text x="650" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#8b9fff" letter-spacing="2">HỆ THỐNG BÁN LINH KIỆN XE MÁY</text>
+
+        <!-- ══════════════════════════════════
+             PACKAGE BOXES
+        ══════════════════════════════════ -->
+
+        <!-- UC-01 Quản Lý Tài Khoản -->
+        <rect x="236" y="110" width="250" height="295" rx="10" fill="rgba(99,120,255,0.08)" stroke="#6378ff" stroke-width="1.5"/>
+        <text x="361" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#8b9fff">UC-01: Quản Lý Tài Khoản</text>
+        <!-- ellipses -->
+        <ellipse cx="310" cy="158" rx="55" ry="18" fill="rgba(99,120,255,0.15)" stroke="#6378ff" stroke-width="1"/>
+        <text x="310" y="162" text-anchor="middle" font-size="9" fill="#e2e8f8">UC01.1 Xem trang chủ</text>
+
+        <ellipse cx="310" cy="196" rx="55" ry="18" fill="rgba(99,120,255,0.15)" stroke="#6378ff" stroke-width="1"/>
+        <text x="310" y="200" text-anchor="middle" font-size="9" fill="#e2e8f8">UC01.2 Đăng ký</text>
+
+        <ellipse cx="310" cy="234" rx="55" ry="18" fill="rgba(99,120,255,0.15)" stroke="#6378ff" stroke-width="1"/>
+        <text x="310" y="238" text-anchor="middle" font-size="9" fill="#e2e8f8">UC01.3 Đăng nhập</text>
+
+        <ellipse cx="310" cy="272" rx="55" ry="18" fill="rgba(99,120,255,0.15)" stroke="#6378ff" stroke-width="1"/>
+        <text x="310" y="276" text-anchor="middle" font-size="9" fill="#e2e8f8">UC01.4 Đăng xuất</text>
+
+        <ellipse cx="310" cy="310" rx="55" ry="18" fill="rgba(99,120,255,0.15)" stroke="#6378ff" stroke-width="1"/>
+        <text x="310" y="314" text-anchor="middle" font-size="9" fill="#e2e8f8">UC01.5 Quên mật khẩu</text>
+
+        <ellipse cx="420" cy="158" rx="55" ry="18" fill="rgba(99,120,255,0.15)" stroke="#6378ff" stroke-width="1"/>
+        <text x="420" y="162" text-anchor="middle" font-size="9" fill="#e2e8f8">UC01.6 Cập nhật TT</text>
+
+        <ellipse cx="420" cy="196" rx="55" ry="18" fill="rgba(99,120,255,0.15)" stroke="#6378ff" stroke-width="1"/>
+        <text x="420" y="200" text-anchor="middle" font-size="9" fill="#e2e8f8">UC01.7 KT trùng TĐN</text>
+
+        <ellipse cx="420" cy="234" rx="55" ry="18" fill="rgba(99,120,255,0.15)" stroke="#6378ff" stroke-width="1"/>
+        <text x="420" y="238" text-anchor="middle" font-size="9" fill="#e2e8f8">UC01.8 KT trùng Email</text>
+
+        <ellipse cx="420" cy="272" rx="55" ry="18" fill="rgba(99,120,255,0.15)" stroke="#6378ff" stroke-width="1"/>
+        <text x="420" y="276" text-anchor="middle" font-size="9" fill="#e2e8f8">UC01.9 reCAPTCHA</text>
+
+        <ellipse cx="420" cy="310" rx="55" ry="18" fill="rgba(99,120,255,0.15)" stroke="#6378ff" stroke-width="1"/>
+        <text x="420" y="314" text-anchor="middle" font-size="9" fill="#e2e8f8">UC01.10 Xác minh ID</text>
+
+        <!-- UC-02 Duyệt SP -->
+        <rect x="500" y="110" width="230" height="220" rx="10" fill="rgba(45,212,191,0.08)" stroke="#2dd4bf" stroke-width="1.5"/>
+        <text x="615" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#2dd4bf">UC-02: Duyệt Sản Phẩm</text>
+
+        <ellipse cx="560" cy="158" rx="52" ry="18" fill="rgba(45,212,191,0.12)" stroke="#2dd4bf" stroke-width="1"/>
+        <text x="560" y="162" text-anchor="middle" font-size="9" fill="#e2e8f8">UC02.1 Danh sách SP</text>
+
+        <ellipse cx="560" cy="196" rx="52" ry="18" fill="rgba(45,212,191,0.12)" stroke="#2dd4bf" stroke-width="1"/>
+        <text x="560" y="200" text-anchor="middle" font-size="9" fill="#e2e8f8">UC02.2 Xem danh mục</text>
+
+        <ellipse cx="560" cy="234" rx="52" ry="18" fill="rgba(45,212,191,0.12)" stroke="#2dd4bf" stroke-width="1"/>
+        <text x="560" y="238" text-anchor="middle" font-size="9" fill="#e2e8f8">UC02.3 Chi tiết SP</text>
+
+        <ellipse cx="672" cy="158" rx="45" ry="18" fill="rgba(45,212,191,0.12)" stroke="#2dd4bf" stroke-width="1"/>
+        <text x="672" y="162" text-anchor="middle" font-size="9" fill="#e2e8f8">UC02.4 Giá &amp; kho</text>
+
+        <ellipse cx="672" cy="196" rx="45" ry="18" fill="rgba(45,212,191,0.12)" stroke="#2dd4bf" stroke-width="1"/>
+        <text x="672" y="200" text-anchor="middle" font-size="9" fill="#e2e8f8">UC02.5 Hình ảnh</text>
+
+        <ellipse cx="672" cy="234" rx="45" ry="18" fill="rgba(45,212,191,0.12)" stroke="#2dd4bf" stroke-width="1"/>
+        <text x="672" y="238" text-anchor="middle" font-size="9" fill="#e2e8f8">UC02.6 Điều khoản</text>
+
+        <!-- UC-03 Giỏ Hàng -->
+        <rect x="750" y="110" width="310" height="195" rx="10" fill="rgba(255,179,71,0.08)" stroke="#ffb347" stroke-width="1.5"/>
+        <text x="905" y="128" text-anchor="middle" font-size="11" font-weight="700" fill="#ffb347">UC-03: Quản Lý Giỏ Hàng</text>
+
+        <ellipse cx="810" cy="160" rx="50" ry="18" fill="rgba(255,179,71,0.12)" stroke="#ffb347" stroke-width="1"/>
+        <text x="810" y="164" text-anchor="middle" font-size="9" fill="#e2e8f8">UC03.1 Thêm SP</text>
+
+        <ellipse cx="810" cy="198" rx="50" ry="18" fill="rgba(255,179,71,0.12)" stroke="#ffb347" stroke-width="1"/>
+        <text x="810" y="202" text-anchor="middle" font-size="9" fill="#e2e8f8">UC03.2 Xem giỏ</text>
+
+        <ellipse cx="810" cy="270" rx="50" ry="18" fill="rgba(255,179,71,0.12)" stroke="#ffb347" stroke-width="1"/>
+        <text x="810" y="274" text-anchor="middle" font-size="9" fill="#e2e8f8">UC03.5 Tạo giỏ mới</text>
+
+        <ellipse cx="940" cy="160" rx="50" ry="18" fill="rgba(255,179,71,0.12)" stroke="#ffb347" stroke-width="1"/>
+        <text x="940" y="164" text-anchor="middle" font-size="9" fill="#e2e8f8">UC03.3 Cập nhật SL</text>
+
+        <ellipse cx="940" cy="198" rx="50" ry="18" fill="rgba(255,179,71,0.12)" stroke="#ffb347" stroke-width="1"/>
+        <text x="940" y="202" text-anchor="middle" font-size="9" fill="#e2e8f8">UC03.4 Xóa SP</text>
+
+        <!-- UC-04 Đặt Hàng -->
+        <rect x="236" y="420" width="410" height="220" rx="10" fill="rgba(255,107,157,0.08)" stroke="#ff6b9d" stroke-width="1.5"/>
+        <text x="441" y="438" text-anchor="middle" font-size="11" font-weight="700" fill="#ff9cc5">UC-04: Đặt Hàng &amp; Thanh Toán</text>
+
+        <ellipse cx="305" cy="468" rx="55" ry="18" fill="rgba(255,107,157,0.12)" stroke="#ff6b9d" stroke-width="1"/>
+        <text x="305" y="472" text-anchor="middle" font-size="9" fill="#e2e8f8">UC04.1 Xem trang TT</text>
+
+        <ellipse cx="305" cy="506" rx="55" ry="18" fill="rgba(255,107,157,0.12)" stroke="#ff6b9d" stroke-width="1"/>
+        <text x="305" y="510" text-anchor="middle" font-size="9" fill="#e2e8f8">UC04.2 Nhập TT giao</text>
+
+        <ellipse cx="305" cy="544" rx="55" ry="18" fill="rgba(255,107,157,0.12)" stroke="#ff6b9d" stroke-width="1"/>
+        <text x="305" y="548" text-anchor="middle" font-size="9" fill="#e2e8f8">UC04.3 Chọn PT TT</text>
+
+        <ellipse cx="305" cy="582" rx="55" ry="18" fill="rgba(255,107,157,0.12)" stroke="#ff6b9d" stroke-width="1"/>
+        <text x="305" y="586" text-anchor="middle" font-size="9" fill="#e2e8f8">UC04.4 Xác nhận ĐH</text>
+
+        <ellipse cx="430" cy="468" rx="55" ry="18" fill="rgba(255,107,157,0.12)" stroke="#ff6b9d" stroke-width="1"/>
+        <text x="430" y="472" text-anchor="middle" font-size="9" fill="#e2e8f8">UC04.5 Tính tổng tiền</text>
+
+        <ellipse cx="430" cy="506" rx="55" ry="18" fill="rgba(255,107,157,0.12)" stroke="#ff6b9d" stroke-width="1"/>
+        <text x="430" y="510" text-anchor="middle" font-size="9" fill="#e2e8f8">UC04.6 Lưu hồ sơ</text>
+
+        <ellipse cx="430" cy="544" rx="55" ry="18" fill="rgba(255,107,157,0.12)" stroke="#ff6b9d" stroke-width="1"/>
+        <text x="430" y="548" text-anchor="middle" font-size="9" fill="#e2e8f8">UC04.7 Xóa giỏ hàng</text>
+
+        <!-- UC-05 Đơn Hàng -->
+        <rect x="660" y="320" width="400" height="230" rx="10" fill="rgba(74,222,128,0.08)" stroke="#4ade80" stroke-width="1.5"/>
+        <text x="860" y="338" text-anchor="middle" font-size="11" font-weight="700" fill="#4ade80">UC-05: Quản Lý Đơn Hàng</text>
+
+        <ellipse cx="730" cy="368" rx="55" ry="18" fill="rgba(74,222,128,0.12)" stroke="#4ade80" stroke-width="1"/>
+        <text x="730" y="372" text-anchor="middle" font-size="9" fill="#e2e8f8">UC05.1 Lịch sử ĐH</text>
+
+        <ellipse cx="730" cy="406" rx="55" ry="18" fill="rgba(74,222,128,0.12)" stroke="#4ade80" stroke-width="1"/>
+        <text x="730" y="410" text-anchor="middle" font-size="9" fill="#e2e8f8">UC05.2 Chi tiết ĐH</text>
+
+        <ellipse cx="730" cy="444" rx="55" ry="18" fill="rgba(74,222,128,0.12)" stroke="#4ade80" stroke-width="1"/>
+        <text x="730" y="448" text-anchor="middle" font-size="9" fill="#e2e8f8">UC05.3 Hủy ĐH</text>
+
+        <ellipse cx="870" cy="368" rx="55" ry="18" fill="rgba(74,222,128,0.12)" stroke="#4ade80" stroke-width="1"/>
+        <text x="870" y="372" text-anchor="middle" font-size="9" fill="#e2e8f8">UC05.4 Trả hàng</text>
+
+        <ellipse cx="870" cy="406" rx="55" ry="18" fill="rgba(74,222,128,0.12)" stroke="#4ade80" stroke-width="1"/>
+        <text x="870" y="410" text-anchor="middle" font-size="9" fill="#e2e8f8">UC05.5 KT 7 ngày</text>
+
+        <ellipse cx="870" cy="444" rx="55" ry="18" fill="rgba(74,222,128,0.12)" stroke="#4ade80" stroke-width="1"/>
+        <text x="870" y="448" text-anchor="middle" font-size="9" fill="#e2e8f8">UC05.6 Mua lại</text>
+
+        <!-- UC-06 Admin -->
+        <rect x="236" y="660" width="840" height="340" rx="10" fill="rgba(167,139,250,0.08)" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="656" y="678" text-anchor="middle" font-size="11" font-weight="700" fill="#a78bfa">UC-06: Quản Trị Hệ Thống (Admin)</text>
+
+        <ellipse cx="340" cy="720" rx="70" ry="22" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="340" y="724" text-anchor="middle" font-size="9" fill="#e2e8f8">UC06.1 Đăng nhập Admin</text>
+
+        <ellipse cx="500" cy="720" rx="70" ry="22" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="500" y="724" text-anchor="middle" font-size="9" fill="#e2e8f8">UC06.2 Quản lý Sản phẩm</text>
+
+        <ellipse cx="660" cy="720" rx="70" ry="22" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="660" y="724" text-anchor="middle" font-size="9" fill="#e2e8f8">UC06.3 Quản lý Đơn hàng</text>
+
+        <ellipse cx="820" cy="720" rx="70" ry="22" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="820" y="724" text-anchor="middle" font-size="9" fill="#e2e8f8">UC06.4 Quản lý Người dùng</text>
+
+        <ellipse cx="500" cy="780" rx="70" ry="22" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="500" y="784" text-anchor="middle" font-size="9" fill="#e2e8f8">UC06.5 Cập nhật TT ĐH</text>
+
+        <ellipse cx="660" cy="780" rx="70" ry="22" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="1"/>
+        <text x="660" y="784" text-anchor="middle" font-size="9" fill="#e2e8f8">UC06.6 Quản lý Danh mục</text>
+
+        <!-- ══════════════════════════════════
+             ACTORS (outside system)
+        ══════════════════════════════════ -->
+
+        <!-- Guest -->
+        <g transform="translate(60,160)">
+          <circle cx="0" cy="0" r="18" fill="rgba(148,163,184,.2)" stroke="#94a3b8" stroke-width="2"/>
+          <text x="0" y="5" text-anchor="middle" font-size="14">👤</text>
+          <line x1="0" y1="18" x2="0" y2="50" stroke="#94a3b8" stroke-width="2"/>
+          <line x1="-18" y1="35" x2="18" y2="35" stroke="#94a3b8" stroke-width="2"/>
+          <line x1="0" y1="50" x2="-14" y2="72" stroke="#94a3b8" stroke-width="2"/>
+          <line x1="0" y1="50" x2="14" y2="72" stroke="#94a3b8" stroke-width="2"/>
+          <text x="0" y="92" text-anchor="middle" font-size="10" font-weight="700" fill="#94a3b8">Khách</text>
+          <text x="0" y="104" text-anchor="middle" font-size="9" fill="#64748b">Vãng Lai</text>
+        </g>
+
+        <!-- User -->
+        <g transform="translate(60,380)">
+          <circle cx="0" cy="0" r="18" fill="rgba(255,179,71,.2)" stroke="#ffb347" stroke-width="2"/>
+          <text x="0" y="5" text-anchor="middle" font-size="14">🛒</text>
+          <line x1="0" y1="18" x2="0" y2="50" stroke="#ffb347" stroke-width="2"/>
+          <line x1="-18" y1="35" x2="18" y2="35" stroke="#ffb347" stroke-width="2"/>
+          <line x1="0" y1="50" x2="-14" y2="72" stroke="#ffb347" stroke-width="2"/>
+          <line x1="0" y1="50" x2="14" y2="72" stroke="#ffb347" stroke-width="2"/>
+          <text x="0" y="92" text-anchor="middle" font-size="10" font-weight="700" fill="#ffb347">Khách Hàng</text>
+          <text x="0" y="104" text-anchor="middle" font-size="9" fill="#b47e00">(Đã đăng nhập)</text>
+        </g>
+
+        <!-- Admin -->
+        <g transform="translate(60,700)">
+          <circle cx="0" cy="0" r="18" fill="rgba(167,139,250,.2)" stroke="#a78bfa" stroke-width="2"/>
+          <text x="0" y="5" text-anchor="middle" font-size="14">🛡️</text>
+          <line x1="0" y1="18" x2="0" y2="50" stroke="#a78bfa" stroke-width="2"/>
+          <line x1="-18" y1="35" x2="18" y2="35" stroke="#a78bfa" stroke-width="2"/>
+          <line x1="0" y1="50" x2="-14" y2="72" stroke="#a78bfa" stroke-width="2"/>
+          <line x1="0" y1="50" x2="14" y2="72" stroke="#a78bfa" stroke-width="2"/>
+          <text x="0" y="92" text-anchor="middle" font-size="10" font-weight="700" fill="#a78bfa">Quản Trị</text>
+          <text x="0" y="104" text-anchor="middle" font-size="9" fill="#7c5fa0">Viên</text>
+        </g>
+
+        <!-- reCAPTCHA -->
+        <g transform="translate(1190,196)">
+          <circle cx="0" cy="0" r="18" fill="rgba(45,212,191,.2)" stroke="#2dd4bf" stroke-width="2"/>
+          <text x="0" y="5" text-anchor="middle" font-size="14">🤖</text>
+          <line x1="0" y1="18" x2="0" y2="50" stroke="#2dd4bf" stroke-width="2"/>
+          <line x1="-18" y1="35" x2="18" y2="35" stroke="#2dd4bf" stroke-width="2"/>
+          <line x1="0" y1="50" x2="-14" y2="72" stroke="#2dd4bf" stroke-width="2"/>
+          <line x1="0" y1="50" x2="14" y2="72" stroke="#2dd4bf" stroke-width="2"/>
+          <text x="0" y="92" text-anchor="middle" font-size="10" font-weight="700" fill="#2dd4bf">reCAPTCHA</text>
+          <text x="0" y="104" text-anchor="middle" font-size="9" fill="#1a9e90">External</text>
+        </g>
+
+        <!-- ══════════════════════════════════
+             ACTOR CONNECTIONS (lines)
+        ══════════════════════════════════ -->
+
+        <!-- Guest → UC01.1, 01.2, 01.3, 01.5 -->
+        <line x1="82" y1="175" x2="253" y2="200" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#arrow-gray)"/>
+        <!-- Guest → UC02.1 -->
+        <line x1="82" y1="185" x2="505" y2="215" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="4,2" marker-end="url(#arrow-gray)"/>
+
+        <!-- User → UC01.4, 01.6 -->
+        <line x1="82" y1="395" x2="253" y2="310" stroke="#ffb347" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <!-- User → UC03.1, UC04 -->
+        <line x1="82" y1="420" x2="253" y2="468" stroke="#ffb347" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <!-- User → UC05 -->
+        <line x1="82" y1="435" x2="672" y2="390" stroke="#ffb347" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- Admin → UC06 -->
+        <line x1="82" y1="715" x2="253" y2="720" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+        <!-- Include arrows (dashed blue) -->
+        <!-- UC01.2 → UC01.9 -->
+        <line x1="365" y1="196" x2="365" y2="272" stroke="#6378ff" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+        <text x="372" y="240" font-size="8" fill="#6378ff">«include»</text>
+
+        <!-- UC01.2 → UC01.7 -->
+        <line x1="350" y1="196" x2="363" y2="196" stroke="#6378ff" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+
+        <!-- UC04.4 → UC04.5 -->
+        <line x1="360" y1="582" x2="373" y2="468" stroke="#ff6b9d" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrow-acc)"/>
+        <text x="380" y="530" font-size="8" fill="#ff6b9d">«include»</text>
+
+        <!-- UC05.4 → UC05.5 -->
+        <line x1="870" y1="386" x2="870" y2="388" stroke="#4ade80" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+
+        <!-- UC01.9 → reCAPTCHA -->
+        <line x1="475" y1="272" x2="1168" y2="234" stroke="#2dd4bf" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+        <text x="800" y="252" font-size="8" fill="#2dd4bf">«calls»</text>
+
+        <!-- Legend -->
+        <rect x="236" y="860" width="840" height="150" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="656" y="882" text-anchor="middle" font-size="11" font-weight="700" fill="#8892b0">LEGEND</text>
+
+        <line x1="280" y1="910" x2="340" y2="910" stroke="#6378ff" stroke-width="2" marker-end="url(#arrow)"/>
+        <text x="350" y="914" font-size="10" fill="#8892b0">Association (Actor → UseCase)</text>
+
+        <line x1="280" y1="935" x2="340" y2="935" stroke="#6378ff" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arrow)"/>
+        <text x="350" y="939" font-size="10" fill="#8892b0">«include» / «extend»</text>
+
+        <rect x="570" y="900" width="80" height="25" rx="6" fill="rgba(99,120,255,0.12)" stroke="#6378ff" stroke-width="1"/>
+        <text x="610" y="917" text-anchor="middle" font-size="10" fill="#8b9fff">Use Case</text>
+
+        <circle cx="750" cy="912" r="14" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+        <text x="770" y="916" font-size="10" fill="#8892b0">Actor</text>
+
+        <rect x="820" y="900" width="220" height="25" rx="6" fill="rgba(99,120,255,0.06)" stroke="#6378ff" stroke-width="1.5" stroke-dasharray="6,3"/>
+        <text x="930" y="917" text-anchor="middle" font-size="10" fill="#8b9fff">System Boundary</text>
+      </svg>
+    </div>
+
+    <!-- Legend text -->
+    <div class="legend" style="margin-top:24px">
+      <div class="legend-item">
+        <svg width="36" height="16"><line x1="0" y1="8" x2="36" y2="8" stroke="#6378ff" stroke-width="2" marker-end="url(#arr)"/><defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3z" fill="#6378ff"/></marker></defs></svg>
+        <span>Association</span>
+      </div>
+      <div class="legend-item">
+        <svg width="36" height="16"><line x1="0" y1="8" x2="36" y2="8" stroke="#6378ff" stroke-width="1.5" stroke-dasharray="4,2"/></svg>
+        <span>«include» / «extend»</span>
+      </div>
+      <div class="legend-item"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:rgba(99,120,255,.25);border:1px solid #6378ff"></span> UC Tài khoản</div>
+      <div class="legend-item"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:rgba(45,212,191,.25);border:1px solid #2dd4bf"></span> UC Sản phẩm</div>
+      <div class="legend-item"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:rgba(255,179,71,.25);border:1px solid #ffb347"></span> UC Giỏ hàng</div>
+      <div class="legend-item"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:rgba(255,107,157,.25);border:1px solid #ff6b9d"></span> UC Đặt hàng</div>
+      <div class="legend-item"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:rgba(74,222,128,.25);border:1px solid #4ade80"></span> UC Đơn hàng</div>
+      <div class="legend-item"><span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:rgba(167,139,250,.25);border:1px solid #a78bfa"></span> UC Admin</div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: PACKAGES DETAIL
+  ============================================================ -->
+  <div class="tab-content" id="content-packages">
+    <div class="section-title"><span>📋</span> Chi tiết từng Use Case</div>
+    <div class="pkg-grid" id="detail-grid">
+      <!-- Rendered same as overview but with more detail -->
+
+      <div class="pkg-card" style="grid-column: span 2; border-top: 3px solid var(--c-account)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(99,120,255,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(99,120,255,.2)">🔑</div>
+          <div>
+            <div class="pkg-title">UC-01 · Quản Lý Tài Khoản</div>
+            <div class="pkg-sub">Trang liên quan: Dang_ky.aspx · Dang_nhap.aspx · Dang_xuat.aspx · Quen_mat_khau.aspx · index.aspx</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.1</span><div><div class="uc-text">Xem trang chủ</div><div class="uc-sub">Guest + User đều truy cập · index.aspx</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.2</span><div><div class="uc-text">Đăng ký tài khoản <span class="rel-badge rel-inc">«include» 01.7 01.8 01.9</span></div><div class="uc-sub">Nhập HoTen, TenDangNhap, Email, SĐT, MatKhau · Tự redirect sang đăng nhập sau 2s</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.3</span><div><div class="uc-text">Đăng nhập <span class="rel-badge rel-inc">«include» 01.9</span></div><div class="uc-sub">TĐN hoặc Email + Mật khẩu · Phân quyền Admin/User · Lưu Session["User"]</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.4</span><div><div class="uc-text">Đăng xuất</div><div class="uc-sub">Xóa Session · Redirect trang chủ</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.5</span><div><div class="uc-text">Quên mật khẩu <span class="rel-badge rel-inc">«include» 01.10</span></div><div class="uc-sub">Xác minh (TenDangNhap + Email) → đặt lại mật khẩu trực tiếp vào DB</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.6</span><div><div class="uc-text">Cập nhật thông tin cá nhân</div><div class="uc-sub">API: CapNhatThongTinApi.ashx · Cập nhật SĐT, DiaChi → DB + Session</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.7</span><div><div class="uc-text">Kiểm tra trùng tên đăng nhập</div><div class="uc-sub">Gọi trong luồng đăng ký · Trả về thông báo nếu đã tồn tại</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.8</span><div><div class="uc-text">Kiểm tra trùng Email / SĐT</div><div class="uc-sub">Gọi trong luồng đăng ký · Check unique trong bảng NguoiDung</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.9</span><div><div class="uc-text">Xác minh reCAPTCHA <span class="rel-badge rel-ext">External</span></div><div class="uc-sub">Google reCAPTCHA v2 · Bắt buộc khi Đăng nhập &amp; Đăng ký</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-account)">UC01.10</span><div><div class="uc-text">Xác minh danh tính (TênĐN + Email)</div><div class="uc-sub">Dùng trong luồng quên mật khẩu</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pkg-card" style="border-top: 3px solid var(--c-product)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(45,212,191,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(45,212,191,.2)">🛵</div>
+          <div>
+            <div class="pkg-title">UC-02 · Duyệt &amp; Xem Sản Phẩm</div>
+            <div class="pkg-sub">SanPham.aspx · ChiTietSanPham.aspx · Dieu_khoan.aspx · LinhKienApi · DanhMucApi · ChiTietSPApi</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.1</span><div><div class="uc-text">Xem danh sách sản phẩm</div><div class="uc-sub">API LinhKienApi.ashx · Hiển thị linh kiện xe máy</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.2</span><div><div class="uc-text">Xem theo danh mục <span class="rel-badge rel-ext">«extend» UC02.1</span></div><div class="uc-sub">API DanhMucApi.ashx · Lọc theo DanhMuc</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.3</span><div><div class="uc-text">Xem chi tiết sản phẩm <span class="rel-badge rel-inc">«include» 02.4 02.5</span></div><div class="uc-sub">ChiTietSPApi.ashx?id={maLinhKien}</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.4</span><div><div class="uc-text">Xem giá &amp; tồn kho</div><div class="uc-sub">GiaBan, GiaNiemYet, SoLuongTon từ bảng LinhKien</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.5</span><div><div class="uc-text">Xem hình ảnh sản phẩm</div><div class="uc-sub">Field HinhAnh từ bảng LinhKien</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-product)">UC02.6</span><div><div class="uc-text">Xem điều khoản dịch vụ</div><div class="uc-sub">Dieu_khoan.aspx</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pkg-card" style="border-top: 3px solid var(--c-cart)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(255,179,71,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(255,179,71,.2)">🛒</div>
+          <div>
+            <div class="pkg-title">UC-03 · Quản Lý Giỏ Hàng</div>
+            <div class="pkg-sub">GioHangApi.ashx · Bảng GioHang + ChiTietGioHang · Yêu cầu đăng nhập</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-cart)">UC03.1</span><div><div class="uc-text">Thêm sản phẩm vào giỏ <span class="rel-badge rel-ext">«extend» UC03.5</span></div><div class="uc-sub">action=add · Có thể chọn số lượng</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-cart)">UC03.2</span><div><div class="uc-text">Xem giỏ hàng</div><div class="uc-sub">action=get · Hiển thị danh sách &amp; tổng tiền</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-cart)">UC03.3</span><div><div class="uc-text">Cập nhật số lượng trong giỏ</div><div class="uc-sub">action=update · Xóa nếu qty=0</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-cart)">UC03.4</span><div><div class="uc-text">Xóa sản phẩm khỏi giỏ</div><div class="uc-sub">action=remove</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-cart)">UC03.5</span><div><div class="uc-text">Tự tạo giỏ hàng mới cho user</div><div class="uc-sub">Tự động nếu chưa có GioHang trong DB</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pkg-card" style="border-top: 3px solid var(--c-order)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(255,107,157,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(255,107,157,.2)">💳</div>
+          <div>
+            <div class="pkg-title">UC-04 · Đặt Hàng &amp; Thanh Toán</div>
+            <div class="pkg-sub">ThanhToan.aspx · DatHangApi.ashx · Bảng DonHang + ChiTietDonHang</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.1</span><div><div class="uc-text">Xem trang thanh toán</div><div class="uc-sub">ThanhToan.aspx</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.2</span><div><div class="uc-text">Nhập thông tin giao hàng</div><div class="uc-sub">Tên, SĐT, Địa chỉ người nhận</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.3</span><div><div class="uc-text">Chọn phương thức thanh toán</div><div class="uc-sub">COD / Chuyển khoản / QR Code</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.4</span><div><div class="uc-text">Xác nhận đặt hàng <span class="rel-badge rel-inc">«include» 04.5 04.6 04.7</span></div><div class="uc-sub">Tạo DonHang mới, trạng thái "Chờ xác nhận"</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.5</span><div><div class="uc-text">Tính tổng tiền tự động</div><div class="uc-sub">SUM(SoLuong × DonGia) từ ChiTietGioHang</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.6</span><div><div class="uc-text">Lưu thông tin vào hồ sơ</div><div class="uc-sub">Cập nhật HoTen, SĐT, DiaChi vào NguoiDung</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-order)">UC04.7</span><div><div class="uc-text">Xóa giỏ hàng sau đặt hàng</div><div class="uc-sub">Xóa toàn bộ ChiTietGioHang sau khi đặt thành công</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pkg-card" style="border-top: 3px solid var(--c-manage)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(74,222,128,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(74,222,128,.2)">📦</div>
+          <div>
+            <div class="pkg-title">UC-05 · Quản Lý Đơn Hàng</div>
+            <div class="pkg-sub">DonHang.aspx · DonHangApi · HuyDonHangApi · MuaLaiApi</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.1</span><div><div class="uc-text">Xem lịch sử đơn hàng</div><div class="uc-sub">DonHangApi.ashx · Sắp xếp mới nhất lên đầu</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.2</span><div><div class="uc-text">Xem chi tiết đơn hàng</div><div class="uc-sub">Danh sách sản phẩm + trạng thái đơn</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.3</span><div><div class="uc-text">Hủy đơn hàng</div><div class="uc-sub">⚠️ Chỉ khi TrangThaiDon = "Chờ xác nhận" → "Đã hủy"</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.4</span><div><div class="uc-text">Yêu cầu trả hàng / hoàn tiền <span class="rel-badge rel-inc">«include» 05.5</span></div><div class="uc-sub">Chỉ khi "Hoàn thành" → "Trả hàng/Hoàn tiền"</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.5</span><div><div class="uc-text">Kiểm tra chính sách 7 ngày</div><div class="uc-sub">So sánh NgayDat vs DateTime.Now ≤ 7 ngày</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-manage)">UC05.6</span><div><div class="uc-text">Mua lại đơn hàng cũ <span class="rel-badge rel-inc">«include» UC03.1</span></div><div class="uc-sub">MuaLaiApi.ashx · Cộng dồn vào giỏ hiện tại</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pkg-card" style="border-top: 3px solid var(--c-admin)">
+        <div class="pkg-header" style="background: linear-gradient(135deg, rgba(167,139,250,.12), transparent)">
+          <div class="pkg-icon" style="background:rgba(167,139,250,.2)">🛡️</div>
+          <div>
+            <div class="pkg-title">UC-06 · Quản Trị Hệ Thống</div>
+            <div class="pkg-sub">Admin.aspx · Admin_DonHang.aspx · Phân quyền VaiTro = "Admin"</div>
+          </div>
+        </div>
+        <div class="pkg-body">
+          <ul class="uc-list">
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.1</span><div><div class="uc-text">Đăng nhập Admin</div><div class="uc-sub">VaiTro = "Admin" → redirect Admin.aspx</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.2</span><div><div class="uc-text">Quản lý Sản phẩm (CRUD)</div><div class="uc-sub">Thêm / Sửa / Xóa LinhKien trong Admin.aspx</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.3</span><div><div class="uc-text">Quản lý Đơn hàng</div><div class="uc-sub">Admin_DonHang.aspx · Xem toàn bộ đơn của mọi user</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.4</span><div><div class="uc-text">Quản lý Người dùng</div><div class="uc-sub">Xem &amp; quản lý bảng NguoiDung</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.5</span><div><div class="uc-text">Cập nhật trạng thái đơn hàng</div><div class="uc-sub">Chờ xác nhận → Đang xử lý → Đang giao → Hoàn thành</div></div></li>
+            <li class="uc-item"><span class="uc-code" style="background:var(--c-admin)">UC06.6</span><div><div class="uc-text">Quản lý Danh mục</div><div class="uc-sub">CRUD bảng DanhMuc</div></div></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: ACTORS & ROLES
+  ============================================================ -->
+  <div class="tab-content" id="content-actors">
+    <div class="section-title"><span>👥</span> Actors &amp; Phân quyền</div>
+
+    <div class="flow-row" style="flex-direction:column; gap:0">
+      <!-- Guest -->
+      <div class="flow-row">
+        <div class="flow-actor" style="background:rgba(148,163,184,.08); border:1px solid rgba(148,163,184,.2)">
+          <span style="font-size:28px">👤</span>
+          <span style="color:#94a3b8">Khách<br/>Vãng Lai</span>
+        </div>
+        <div class="flow-ucs">
+          <span class="flow-uc" style="background:rgba(99,120,255,.1); border-color:rgba(99,120,255,.3); color:#8b9fff">UC01.1 Xem trang chủ</span>
+          <span class="flow-uc" style="background:rgba(99,120,255,.1); border-color:rgba(99,120,255,.3); color:#8b9fff">UC01.2 Đăng ký</span>
+          <span class="flow-uc" style="background:rgba(99,120,255,.1); border-color:rgba(99,120,255,.3); color:#8b9fff">UC01.3 Đăng nhập</span>
+          <span class="flow-uc" style="background:rgba(99,120,255,.1); border-color:rgba(99,120,255,.3); color:#8b9fff">UC01.5 Quên MK</span>
+          <span class="flow-uc" style="background:rgba(45,212,191,.1); border-color:rgba(45,212,191,.3); color:#2dd4bf">UC02.1 Danh sách SP</span>
+          <span class="flow-uc" style="background:rgba(45,212,191,.1); border-color:rgba(45,212,191,.3); color:#2dd4bf">UC02.2 Danh mục</span>
+          <span class="flow-uc" style="background:rgba(45,212,191,.1); border-color:rgba(45,212,191,.3); color:#2dd4bf">UC02.3 Chi tiết SP</span>
+          <span class="flow-uc" style="background:rgba(45,212,191,.1); border-color:rgba(45,212,191,.3); color:#2dd4bf">UC02.6 Điều khoản</span>
+        </div>
+      </div>
+
+      <!-- User -->
+      <div class="flow-row">
+        <div class="flow-actor" style="background:rgba(255,179,71,.08); border:1px solid rgba(255,179,71,.25)">
+          <span style="font-size:28px">🛒</span>
+          <span style="color:#ffb347">Khách<br/>Hàng</span>
+        </div>
+        <div class="flow-ucs">
+          <span class="flow-uc" style="background:rgba(99,120,255,.1); border-color:rgba(99,120,255,.3); color:#8b9fff">UC01.4 Đăng xuất</span>
+          <span class="flow-uc" style="background:rgba(99,120,255,.1); border-color:rgba(99,120,255,.3); color:#8b9fff">UC01.6 Cập nhật TT</span>
+          <span class="flow-uc" style="background:rgba(45,212,191,.1); border-color:rgba(45,212,191,.3); color:#2dd4bf">UC02.1–02.6 Xem SP</span>
+          <span class="flow-uc" style="background:rgba(255,179,71,.1); border-color:rgba(255,179,71,.3); color:#ffb347">UC03.1–03.4 Giỏ hàng</span>
+          <span class="flow-uc" style="background:rgba(255,107,157,.1); border-color:rgba(255,107,157,.3); color:#ff9cc5">UC04.1–04.4 Đặt hàng</span>
+          <span class="flow-uc" style="background:rgba(74,222,128,.1); border-color:rgba(74,222,128,.3); color:#4ade80">UC05.1 Lịch sử ĐH</span>
+          <span class="flow-uc" style="background:rgba(74,222,128,.1); border-color:rgba(74,222,128,.3); color:#4ade80">UC05.2 Chi tiết ĐH</span>
+          <span class="flow-uc" style="background:rgba(74,222,128,.1); border-color:rgba(74,222,128,.3); color:#4ade80">UC05.3 Hủy ĐH</span>
+          <span class="flow-uc" style="background:rgba(74,222,128,.1); border-color:rgba(74,222,128,.3); color:#4ade80">UC05.4 Trả hàng</span>
+          <span class="flow-uc" style="background:rgba(74,222,128,.1); border-color:rgba(74,222,128,.3); color:#4ade80">UC05.6 Mua lại</span>
+        </div>
+      </div>
+
+      <!-- Admin -->
+      <div class="flow-row">
+        <div class="flow-actor" style="background:rgba(167,139,250,.08); border:1px solid rgba(167,139,250,.25)">
+          <span style="font-size:28px">🛡️</span>
+          <span style="color:#a78bfa">Quản Trị<br/>Viên</span>
+        </div>
+        <div class="flow-ucs">
+          <span class="flow-uc" style="background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.3); color:#a78bfa">UC06.1 Đăng nhập Admin</span>
+          <span class="flow-uc" style="background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.3); color:#a78bfa">UC06.2 QL Sản phẩm</span>
+          <span class="flow-uc" style="background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.3); color:#a78bfa">UC06.3 QL Đơn hàng</span>
+          <span class="flow-uc" style="background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.3); color:#a78bfa">UC06.4 QL Người dùng</span>
+          <span class="flow-uc" style="background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.3); color:#a78bfa">UC06.5 Cập nhật TT ĐH</span>
+          <span class="flow-uc" style="background:rgba(167,139,250,.1); border-color:rgba(167,139,250,.3); color:#a78bfa">UC06.6 QL Danh mục</span>
+        </div>
+      </div>
+
+      <!-- reCAPTCHA -->
+      <div class="flow-row">
+        <div class="flow-actor" style="background:rgba(45,212,191,.08); border:1px solid rgba(45,212,191,.25)">
+          <span style="font-size:28px">🤖</span>
+          <span style="color:#2dd4bf">reCAPTCHA<br/>External</span>
+        </div>
+        <div class="flow-ucs">
+          <span class="flow-uc" style="background:rgba(45,212,191,.1); border-color:rgba(45,212,191,.3); color:#2dd4bf">UC01.9 Xác minh reCAPTCHA</span>
+          <span style="font-size:12px; color:var(--text2); align-self:center">← Được gọi bởi UC01.2 (Đăng ký) và UC01.3 (Đăng nhập)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trạng thái đơn hàng -->
+    <div class="section-title" style="margin-top:48px"><span>🔄</span> Luồng trạng thái đơn hàng</div>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; overflow-x:auto">
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-width:700px">
+        <div style="padding:10px 20px; border-radius:8px; background:rgba(255,179,71,.15); border:1px solid #ffb347; color:#ffb347; font-weight:700; font-size:13px; text-align:center">Chờ<br/>xác nhận</div>
+        <div style="color:#8892b0; font-size:20px">→</div>
+        <div style="padding:10px 20px; border-radius:8px; background:rgba(99,120,255,.15); border:1px solid #6378ff; color:#8b9fff; font-weight:700; font-size:13px; text-align:center">Đang<br/>xử lý</div>
+        <div style="color:#8892b0; font-size:20px">→</div>
+        <div style="padding:10px 20px; border-radius:8px; background:rgba(45,212,191,.15); border:1px solid #2dd4bf; color:#2dd4bf; font-weight:700; font-size:13px; text-align:center">Đang<br/>giao hàng</div>
+        <div style="color:#8892b0; font-size:20px">→</div>
+        <div style="padding:10px 20px; border-radius:8px; background:rgba(74,222,128,.15); border:1px solid #4ade80; color:#4ade80; font-weight:700; font-size:13px; text-align:center">Hoàn<br/>thành</div>
+        <div style="color:#8892b0; font-size:20px">→</div>
+        <div style="padding:10px 20px; border-radius:8px; background:rgba(255,107,157,.15); border:1px solid #ff6b9d; color:#ff9cc5; font-weight:700; font-size:13px; text-align:center">Trả hàng/<br/>Hoàn tiền</div>
+      </div>
+      <div style="margin-top:16px; display:flex; align-items:center; gap:10px">
+        <div style="padding:10px 20px; border-radius:8px; background:rgba(148,163,184,.1); border:1px solid #94a3b8; color:#94a3b8; font-weight:700; font-size:13px">Chờ xác nhận</div>
+        <div style="color:#ff6b9d; font-size:16px">→ Hủy →</div>
+        <div style="padding:10px 20px; border-radius:8px; background:rgba(255,107,157,.1); border:1px solid #ff6b9d; color:#ff9cc5; font-weight:700; font-size:13px">Đã hủy</div>
+        <span style="color:var(--text2); font-size:12px">(UC05.3 – Chỉ khi "Chờ xác nhận")</span>
+      </div>
+      <div style="margin-top:8px; color:var(--text2); font-size:12px">
+        UC05.4 Trả hàng: Chỉ áp dụng khi đơn "Hoàn thành" VÀ trong vòng 7 ngày kể từ NgayDat
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       TAB: RELATIONS
+  ============================================================ -->
+  <div class="tab-content" id="content-relations">
+    <div class="section-title"><span>🔗</span> Bảng quan hệ Use Case</div>
+
+    <div class="rel-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Quan hệ</th>
+            <th>Loại</th>
+            <th>Mô tả</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>UC01.2 → UC01.7</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Đăng ký bắt buộc kiểm tra trùng tên đăng nhập</td></tr>
+          <tr><td>2</td><td>UC01.2 → UC01.8</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Đăng ký bắt buộc kiểm tra trùng Email/SĐT</td></tr>
+          <tr><td>3</td><td>UC01.2 → UC01.9</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Đăng ký bắt buộc xác minh reCAPTCHA</td></tr>
+          <tr><td>4</td><td>UC01.3 → UC01.9</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Đăng nhập bắt buộc xác minh reCAPTCHA</td></tr>
+          <tr><td>5</td><td>UC01.5 → UC01.10</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Quên MK bắt buộc xác minh danh tính (TĐN+Email)</td></tr>
+          <tr><td>6</td><td>UC01.9 → reCAPTCHA</td><td><span class="rel-badge rel-ext">«calls»</span></td><td>Gọi API Google reCAPTCHA v2 external</td></tr>
+          <tr><td>7</td><td>UC02.2 → UC02.1</td><td><span class="rel-badge rel-ext">«extend»</span></td><td>Lọc theo danh mục mở rộng chức năng xem danh sách</td></tr>
+          <tr><td>8</td><td>UC02.3 → UC02.4</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Chi tiết SP luôn hiển thị giá &amp; tồn kho</td></tr>
+          <tr><td>9</td><td>UC02.3 → UC02.5</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Chi tiết SP luôn hiển thị hình ảnh</td></tr>
+          <tr><td>10</td><td>UC03.1 → UC03.5</td><td><span class="rel-badge rel-ext">«extend»</span></td><td>Thêm vào giỏ tự tạo giỏ mới nếu chưa có</td></tr>
+          <tr><td>11</td><td>UC04.4 → UC04.5</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Xác nhận ĐH bắt buộc tính tổng tiền</td></tr>
+          <tr><td>12</td><td>UC04.4 → UC04.6</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Xác nhận ĐH tự động lưu thông tin vào hồ sơ</td></tr>
+          <tr><td>13</td><td>UC04.4 → UC04.7</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Xác nhận ĐH xóa sạch giỏ hàng sau đặt thành công</td></tr>
+          <tr><td>14</td><td>UC05.4 → UC05.5</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Yêu cầu trả hàng bắt buộc kiểm tra chính sách 7 ngày</td></tr>
+          <tr><td>15</td><td>UC05.6 → UC03.1</td><td><span class="rel-badge rel-inc">«include»</span></td><td>Mua lại đơn cũ sẽ thêm sản phẩm vào giỏ</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-title" style="margin-top:48px"><span>📊</span> Thống kê theo Actor</div>
+    <div class="rel-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Actor</th>
+            <th>Số UC trực tiếp</th>
+            <th>Vai trò</th>
+            <th>Use Cases</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="pill pill-guest">👤 Guest</span></td>
+            <td>10</td>
+            <td>Chưa đăng nhập</td>
+            <td>UC01.1, 01.2, 01.3, 01.5 · UC02.1–02.6</td>
+          </tr>
+          <tr>
+            <td><span class="pill pill-user">🛒 User</span></td>
+            <td>21</td>
+            <td>Đã đăng nhập</td>
+            <td>UC01.4, 01.6 · UC02.1–02.6 · UC03.1–03.4 · UC04.1–04.4 · UC05.1–05.6</td>
+          </tr>
+          <tr>
+            <td><span class="pill pill-admin">🛡️ Admin</span></td>
+            <td>6</td>
+            <td>Quản trị</td>
+            <td>UC06.1 – UC06.6</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('content-' + tab).classList.add('active');
+    });
+  });
+
+  // Animate cards on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.pkg-card, .actor-card, .stat-chip').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(24px)';
+    el.style.transition = 'opacity .5s ease, transform .5s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>

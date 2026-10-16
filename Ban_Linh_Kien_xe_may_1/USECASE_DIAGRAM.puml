@@ -1,0 +1,263 @@
+@startuml BanLinhKienXeMay_UseCaseDiagram
+
+' =============================================
+' CÀI ĐẶT GIAO DIỆN
+' =============================================
+!theme plain
+skinparam backgroundColor #F8F9FA
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #DDEEFF
+    BorderColor #336699
+    BorderThickness 1.5
+    FontSize 12
+    FontColor #1a1a2e
+    ArrowColor #336699
+}
+
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+
+skinparam rectangle {
+    BackgroundColor #EEF7FF
+    BorderColor #336699
+    BorderThickness 2
+    FontColor #336699
+    FontStyle bold
+    FontSize 14
+}
+
+skinparam package {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+    BorderThickness 2
+    FontColor #F57F17
+    FontStyle bold
+}
+
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+}
+
+title
+    <b><size:20>USE CASE DIAGRAM</size></b>
+    <b><size:16>Hệ Thống Bán Linh Kiện Xe Máy Trực Tuyến</size></b>
+    <size:11>(ASP.NET WebForms + Entity Framework + SQL Server)</size>
+end title
+
+' =============================================
+' ACTORS
+' =============================================
+actor "Khách Vãng Lai\n(Guest)" as Guest #LightGray
+actor "Khách Hàng\n(User)" as User #FFD54F
+actor "Quản Trị Viên\n(Admin)" as Admin #EF9A9A
+actor "Google reCAPTCHA\n(External)" as Captcha #C8E6C9
+actor "Hệ Thống Email\n(External)" as Email #B3E5FC
+
+' =============================================
+' HỆ THỐNG CHÍNH
+' =============================================
+rectangle "HỆ THỐNG BÁN LINH KIỆN XE MÁY" {
+
+    ' ==========================================
+    ' GÓI 1: QUẢN LÝ TÀI KHOẢN
+    ' ==========================================
+    package "UC-01: Quản Lý Tài Khoản" {
+        usecase "UC01.1\nXem trang chủ" as UC_Home
+        usecase "UC01.2\nĐăng ký tài khoản" as UC_Register
+        usecase "UC01.3\nĐăng nhập" as UC_Login
+        usecase "UC01.4\nĐăng xuất" as UC_Logout
+        usecase "UC01.5\nQuên mật khẩu" as UC_ForgotPW
+        usecase "UC01.6\nCập nhật thông tin\ncá nhân" as UC_UpdateInfo
+        usecase "UC01.7\nKiểm tra trùng\ntên đăng nhập" as UC_CheckUser
+        usecase "UC01.8\nKiểm tra trùng\nEmail / SĐT" as UC_CheckEmail
+        usecase "UC01.9\nXác minh\nreCAPTCHA" as UC_Captcha
+        usecase "UC01.10\nXác minh danh tính\n(Tên ĐN + Email)" as UC_VerifyID
+    }
+
+    ' ==========================================
+    ' GÓI 2: DUYỆT & TÌM KIẾM SẢN PHẨM
+    ' ==========================================
+    package "UC-02: Duyệt & Xem Sản Phẩm" {
+        usecase "UC02.1\nXem danh sách\nsản phẩm" as UC_ListProduct
+        usecase "UC02.2\nXem theo danh mục" as UC_Category
+        usecase "UC02.3\nXem chi tiết\nsản phẩm" as UC_ProductDetail
+        usecase "UC02.4\nXem giá & tồn kho" as UC_Price
+        usecase "UC02.5\nXem hình ảnh\nsản phẩm" as UC_Image
+        usecase "UC02.6\nXem điều khoản\ndịch vụ" as UC_Terms
+    }
+
+    ' ==========================================
+    ' GÓI 3: GIỎ HÀNG
+    ' ==========================================
+    package "UC-03: Quản Lý Giỏ Hàng" {
+        usecase "UC03.1\nThêm sản phẩm\nvào giỏ" as UC_AddCart
+        usecase "UC03.2\nXem giỏ hàng" as UC_ViewCart
+        usecase "UC03.3\nCập nhật số lượng\ntrong giỏ" as UC_UpdateCart
+        usecase "UC03.4\nXóa sản phẩm\nkhỏi giỏ" as UC_RemoveCart
+        usecase "UC03.5\nTự tạo giỏ hàng\nmới cho user" as UC_CreateCart
+    }
+
+    ' ==========================================
+    ' GÓI 4: ĐẶT HÀNG & THANH TOÁN
+    ' ==========================================
+    package "UC-04: Đặt Hàng & Thanh Toán" {
+        usecase "UC04.1\nXem trang\nthanh toán" as UC_CheckoutPage
+        usecase "UC04.2\nNhập thông tin\ngiao hàng" as UC_FillShipping
+        usecase "UC04.3\nChọn phương thức\nthanh toán" as UC_PayMethod
+        usecase "UC04.4\nXác nhận\nđặt hàng" as UC_PlaceOrder
+        usecase "UC04.5\nTính tổng tiền\ntự động" as UC_CalcTotal
+        usecase "UC04.6\nLưu thông tin\nvào hồ sơ" as UC_SaveProfile
+        usecase "UC04.7\nXóa giỏ hàng\nsau đặt hàng" as UC_ClearCart
+    }
+
+    ' ==========================================
+    ' GÓI 5: QUẢN LÝ ĐƠN HÀNG
+    ' ==========================================
+    package "UC-05: Quản Lý Đơn Hàng" {
+        usecase "UC05.1\nXem lịch sử\nđơn hàng" as UC_OrderHistory
+        usecase "UC05.2\nXem chi tiết\nđơn hàng" as UC_OrderDetail
+        usecase "UC05.3\nHủy đơn hàng\n(Chờ xác nhận)" as UC_CancelOrder
+        usecase "UC05.4\nYêu cầu trả hàng\n/ hoàn tiền" as UC_ReturnOrder
+        usecase "UC05.5\nKiểm tra chính sách\n7 ngày" as UC_Check7Days
+        usecase "UC05.6\nMua lại\nđơn hàng cũ" as UC_ReOrder
+    }
+
+    ' ==========================================
+    ' GÓI 6: ADMIN - QUẢN TRỊ
+    ' ==========================================
+    package "UC-06: Quản Trị Hệ Thống (Admin)" {
+        usecase "UC06.1\nĐăng nhập\nAdmin" as UC_AdminLogin
+        usecase "UC06.2\nQuản lý\nSản phẩm" as UC_ManageProduct
+        usecase "UC06.3\nQuản lý\nĐơn hàng" as UC_ManageOrder
+        usecase "UC06.4\nQuản lý\nNgười dùng" as UC_ManageUser
+        usecase "UC06.5\nCập nhật trạng thái\nđơn hàng" as UC_UpdateOrderStatus
+        usecase "UC06.6\nQuản lý\nDanh mục" as UC_ManageCategory
+    }
+
+}
+
+' =============================================
+' QUAN HỆ GUEST
+' =============================================
+Guest --> UC_Home
+Guest --> UC_ListProduct
+Guest --> UC_Category
+Guest --> UC_ProductDetail
+Guest --> UC_Price
+Guest --> UC_Image
+Guest --> UC_Terms
+Guest --> UC_Register
+Guest --> UC_Login
+Guest --> UC_ForgotPW
+
+' =============================================
+' QUAN HỆ USER (KHÁCH HÀNG ĐÃ ĐĂNG NHẬP)
+' =============================================
+User --> UC_Home
+User --> UC_ListProduct
+User --> UC_Category
+User --> UC_ProductDetail
+User --> UC_Terms
+User --> UC_Logout
+User --> UC_UpdateInfo
+
+User --> UC_AddCart
+User --> UC_ViewCart
+User --> UC_UpdateCart
+User --> UC_RemoveCart
+
+User --> UC_CheckoutPage
+User --> UC_FillShipping
+User --> UC_PayMethod
+User --> UC_PlaceOrder
+
+User --> UC_OrderHistory
+User --> UC_OrderDetail
+User --> UC_CancelOrder
+User --> UC_ReturnOrder
+User --> UC_ReOrder
+
+' =============================================
+' QUAN HỆ ADMIN
+' =============================================
+Admin --> UC_AdminLogin
+Admin --> UC_ManageProduct
+Admin --> UC_ManageOrder
+Admin --> UC_ManageUser
+Admin --> UC_UpdateOrderStatus
+Admin --> UC_ManageCategory
+
+' =============================================
+' QUAN HỆ EXTERNAL ACTOR
+' =============================================
+UC_Register ..> UC_Captcha : <<include>>
+UC_Login ..> UC_Captcha : <<include>>
+UC_Captcha --> Captcha : <<calls>>
+
+UC_ForgotPW ..> UC_VerifyID : <<include>>
+
+' =============================================
+' QUAN HỆ <<include>> - BẮT BUỘC
+' =============================================
+UC_Register ..> UC_CheckUser : <<include>>
+UC_Register ..> UC_CheckEmail : <<include>>
+
+UC_ProductDetail ..> UC_Price : <<include>>
+UC_ProductDetail ..> UC_Image : <<include>>
+
+UC_PlaceOrder ..> UC_CalcTotal : <<include>>
+UC_PlaceOrder ..> UC_SaveProfile : <<include>>
+UC_PlaceOrder ..> UC_ClearCart : <<include>>
+
+UC_ReturnOrder ..> UC_Check7Days : <<include>>
+
+UC_AddCart ..> UC_CreateCart : <<extend>>
+UC_ReOrder ..> UC_AddCart : <<include>>
+
+' =============================================
+' QUAN HỆ <<extend>> - TÙY CHỌN
+' =============================================
+UC_Category ..> UC_ListProduct : <<extend>>
+
+' =============================================
+' GHI CHÚ
+' =============================================
+note right of UC_CancelOrder
+    <b>Điều kiện:</b>
+    Trạng thái = "Chờ xác nhận"
+    → Chuyển sang "Đã hủy"
+end note
+
+note right of UC_ReturnOrder
+    <b>Điều kiện:</b>
+    Trạng thái = "Hoàn thành"
+    + Trong vòng 7 ngày
+    → Chuyển sang "Trả hàng/Hoàn tiền"
+end note
+
+note bottom of UC_Captcha
+    <b>Google reCAPTCHA v2</b>
+    Bắt buộc ở: Đăng nhập & Đăng ký
+    Secret Key: 6LfMcn4t...
+end note
+
+note left of UC_PlaceOrder
+    <b>Luồng đặt hàng:</b>
+    1. Tính tổng tiền giỏ hàng
+    2. Lưu thông tin người nhận
+    3. Tạo đơn hàng mới (DB)
+    4. Copy chi tiết giỏ → đơn
+    5. Xóa sạch giỏ hàng
+end note
+
+@enduml

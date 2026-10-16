@@ -1,0 +1,84 @@
+@startuml AD03_Quen_Mat_Khau
+
+skinparam backgroundColor #F9F0FF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActivityBorderColor #4A148C
+skinparam ActivityBackgroundColor #E1BEE7
+skinparam ActivityDiamondBackgroundColor #FFF9C4
+skinparam ActivityDiamondBorderColor #F9A825
+skinparam ActivityStartColor #4A148C
+skinparam ActivityEndColor #1B5E20
+skinparam ArrowColor #4A148C
+skinparam NoteBackgroundColor #FFF9C4
+skinparam NoteBorderColor #F9A825
+
+title
+    <b><size:16>AD-03: Quen Mat Khau / Dat Lai</size></b>
+    <size:11>He Thong Ban Linh Kien Xe May</size>
+    <size:10>Trang: Quen_mat_khau.aspx | Bang: NguoiDung</size>
+end title
+
+|#F9F0FF| Actor (Nguoi Dung) |
+|#E3F2FD| Server (ASP.NET) |
+|#E8F5E9| Database (SQL Server) |
+
+|Actor (Nguoi Dung)|
+start
+:Truy cap Quen_mat_khau.aspx;
+:Nhap Ten Dang Nhap;
+:Nhap Email da dang ky;
+:Nhan nut "Xac Minh";
+
+|Server (ASP.NET)|
+:Nhan request POST;
+
+|Database (SQL Server)|
+:SELECT * FROM NguoiDung\nWHERE TenDangNhap = @tdn\n  AND Email = @email;
+
+|Server (ASP.NET)|
+if (Tim thay NguoiDung khop cap\n(TenDangNhap + Email)?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Thong tin khong chinh xac.\nVui long kiem tra lai.";
+  |Actor (Nguoi Dung)|
+  :Hien thi thong bao loi;
+  stop
+else (Co)
+endif
+
+:Xac minh danh tinh thanh cong;
+
+|Actor (Nguoi Dung)|
+:Hien thi form dat lai mat khau;
+:Nhap Mat Khau Moi;
+:Nhap Xac Nhan Mat Khau Moi;
+:Nhan nut "Dat Lai Mat Khau";
+
+|Server (ASP.NET)|
+if (Mat khau moi va Xac nhan khop?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Mat khau xac nhan\nkhong khop";
+  |Actor (Nguoi Dung)|
+  :Hien thi thong bao loi;
+  stop
+else (Co)
+endif
+
+if (Mat khau moi du manh?\n(>= 6 ky tu)?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Mat khau qua ngan";
+  |Actor (Nguoi Dung)|
+  :Hien thi thong bao loi;
+  stop
+else (Co)
+endif
+
+|Database (SQL Server)|
+#D5E8D4 :UPDATE NguoiDung\nSET MatKhau = @matkhauMoi\nWHERE MaNguoiDung = @id;
+
+|Server (ASP.NET)|
+:Tra ve thanh cong;
+
+|Actor (Nguoi Dung)|
+#D5E8D4 :Hien thi:\n"Doi mat khau thanh cong!\nVui long dang nhap lai.";
+:Redirect -> Dang_nhap.aspx;
+stop
+
+@enduml

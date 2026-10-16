@@ -1,0 +1,116 @@
+@startuml AD01_Dang_Ky_Tai_Khoan
+
+skinparam backgroundColor #F0F4FF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActivityBorderColor #1565C0
+skinparam ActivityBackgroundColor #DDEEFF
+skinparam ActivityDiamondBackgroundColor #FFF9C4
+skinparam ActivityDiamondBorderColor #F9A825
+skinparam ActivityStartColor #1565C0
+skinparam ActivityEndColor #B71C1C
+skinparam ArrowColor #1565C0
+skinparam NoteBackgroundColor #FFF9C4
+skinparam NoteBorderColor #F9A825
+skinparam PartitionBackgroundColor #EEF4FF
+skinparam PartitionBorderColor #1565C0
+
+title
+    <b><size:16>AD-01: Dang Ky Tai Khoan</size></b>
+    <size:11>He Thong Ban Linh Kien Xe May</size>
+    <size:10>Trang: Dang_ky.aspx | API: Kiem tra trung lap | Bang: NguoiDung</size>
+end title
+
+|#EEF4FF| Guest (Trinh Duyet) |
+|#E3F2FD| Server (ASP.NET) |
+|#E8F5E9| Database (SQL Server) |
+
+|Guest (Trinh Duyet)|
+start
+:Truy cap Dang_ky.aspx;
+:Hien thi form dang ky;
+note right
+  Form gom:
+  - Ho Ten
+  - Ten Dang Nhap
+  - Email
+  - So Dien Thoai
+  - Mat Khau
+  - Xac Nhan Mat Khau
+end note
+:Nhap thong tin dang ky;
+:Giai reCAPTCHA v2;
+:Nhan nut "Dang Ky";
+
+|Server (ASP.NET)|
+:Nhan request POST;
+
+if (reCAPTCHA hop le?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Vui long xac minh reCAPTCHA";
+  |Guest (Trinh Duyet)|
+  :Hien thi thong bao loi;
+  stop
+else (Co)
+endif
+
+if (Mat khau va Xac nhan khop?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Mat khau xac nhan khong khop";
+  |Guest (Trinh Duyet)|
+  :Hien thi thong bao loi;
+  stop
+else (Co)
+endif
+
+|Database (SQL Server)|
+:SELECT * FROM NguoiDung\nWHERE TenDangNhap = @tdnh;
+
+|Server (ASP.NET)|
+if (Ten dang nhap da ton tai?) then (Co)
+  #FFB3B3 :Tra ve loi:\n"Ten dang nhap da duoc su dung";
+  |Guest (Trinh Duyet)|
+  :Hien thi thong bao loi;
+  stop
+else (Chua)
+endif
+
+|Database (SQL Server)|
+:SELECT * FROM NguoiDung\nWHERE Email = @email;
+
+|Server (ASP.NET)|
+if (Email da ton tai?) then (Co)
+  #FFB3B3 :Tra ve loi:\n"Email da duoc su dung";
+  |Guest (Trinh Duyet)|
+  :Hien thi thong bao loi;
+  stop
+else (Chua)
+endif
+
+|Database (SQL Server)|
+:SELECT * FROM NguoiDung\nWHERE SoDienThoai = @sdt;
+
+|Server (ASP.NET)|
+if (So dien thoai da ton tai?) then (Co)
+  #FFB3B3 :Tra ve loi:\n"So dien thoai da duoc su dung";
+  |Guest (Trinh Duyet)|
+  :Hien thi thong bao loi;
+  stop
+else (Chua)
+endif
+
+|Database (SQL Server)|
+#D5E8D4 :INSERT INTO NguoiDung\n(HoTen, TenDangNhap, Email,\n SoDienThoai, MatKhau, VaiTro)\nVALUES (@..., 'User');
+note right
+  VaiTro mac dinh = "User"
+  Admin phai duoc cap quyen thu cong
+end note
+
+|Server (ASP.NET)|
+:Tra ve thanh cong;
+
+|Guest (Trinh Duyet)|
+#D5E8D4 :Hien thi:\n"Dang ky thanh cong!\nDang chuyen trang...";
+:Doi 2 giay;
+:Redirect -> Dang_nhap.aspx;
+stop
+
+@enduml

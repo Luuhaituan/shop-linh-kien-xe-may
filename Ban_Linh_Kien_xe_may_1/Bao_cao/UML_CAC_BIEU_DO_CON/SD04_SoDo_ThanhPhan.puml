@@ -1,0 +1,100 @@
+@startuml SD04_SoDo_ThanhPhan
+title SƠ ĐỒ THÀNH PHẦN (Component Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam shadowing false
+left to right direction
+
+' ====== TẦNG TRÌNH BÀY ======
+package "Tầng Trình bày" {
+    component "Trang chủ" as C_index
+    component "Trang sản phẩm" as C_sp
+    component "Trang chi tiết" as C_ct
+    component "Trang thanh toán" as C_tt
+    component "Trang đơn hàng" as C_dh
+    component "Trang tài khoản" as C_tk
+    component "Trang Admin (SPA)" as C_admin
+    component "Trang đăng nhập / đăng ký" as C_auth
+    component "JavaScript tổng (app.js)" as C_js
+    component "CSS (style.css)" as C_css
+}
+
+' ====== TẦNG API ======
+package "Tầng API (.ashx)" {
+    component "AuthApis\n(DangNhap/DangKy/QuenMK)" as A_auth
+    component "GioHangApi" as A_gio
+    component "DatHangApi" as A_dathang
+    component "DonHangApi" as A_donhang
+    component "HuyDonHangApi" as A_huy
+    component "MuaLaiApi" as A_reorder
+    component "LinhKienApi" as A_lk
+    component "DanhGiaApi" as A_dg
+    component "MaGiamGiaApi" as A_gg
+    component "ChatApi" as A_chat
+    component "SePayWebhook" as A_webhook
+    component "Admin*\n(QLDH / QLSP / QLKM / QLKho...)" as A_admin
+}
+
+' ====== TẦNG TIỆN ÍCH ======
+package "Tầng Tiện ích (Utils)" {
+    component "PhanQuyen" as U_q
+    component "PasswordHelper" as U_p
+    component "EmailHelper" as U_e
+    component "OtpHelper" as U_o
+    component "MaGiamGiaHelper" as U_g
+    component "NhatKyHelper" as U_n
+}
+
+' ====== TẦNG DỮ LIỆU ======
+package "Tầng Dữ liệu" {
+    component "Entity Framework\nEDMX (Database First)" as EF
+    component "SQL Server\nQuanLyLinhKienXeMay" as SQL
+}
+
+' ====== LIÊN KẾT ======
+C_index --> C_js : sử dụng
+C_sp --> C_js
+C_ct --> C_js
+C_tt --> C_js
+C_dh --> C_js
+C_tk --> C_js
+C_admin --> C_js
+C_auth --> C_js
+
+C_js --> A_lk : GET sản phẩm
+C_js --> A_gio : CRUD giỏ
+C_js --> A_dathang : POST đặt
+C_js --> A_donhang : GET ds đơn
+C_js --> A_huy : hủy/trả
+C_js --> A_reorder : mua lại
+C_js --> A_dg : đánh giá
+C_js --> A_gg : kiểm tra mã
+C_js --> A_chat : chat
+C_admin --> A_admin : CRUD quản trị
+C_admin --> A_admin : ThongKeApi
+C_admin --> A_admin : NhatKyApi
+
+A_auth --> U_p : hash/verify
+A_auth --> U_e : gửi email
+A_auth --> U_o : OTP
+A_dathang --> U_g : kiểm tra mã
+A_admin --> U_q : phân quyền
+A_admin --> U_n : ghi nhật ký
+A_chat --> U_q : phân quyền
+
+A_auth --> EF
+A_gio --> EF
+A_dathang --> EF
+A_donhang --> EF
+A_huy --> EF
+A_reorder --> EF
+A_lk --> EF
+A_dg --> EF
+A_chat --> EF
+A_admin --> EF
+A_admin --> SQL : ADO.NET
+A_webhook --> SQL : SqlClient
+EF --> SQL
+
+@enduml

@@ -1,0 +1,190 @@
+@startuml SD02_SoDo_Lop
+title BIỂU ĐỒ LỚP (Class Diagram)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide circle
+
+' ======= LỚP THỰC THỂ (ENTITY) =======
+package "Entities (Models)" {
+
+    class NguoiDung {
+        +int MaNguoiDung
+        +string TenDangNhap
+        +string MatKhau
+        +string HoTen
+        +string SoDienThoai
+        +string Email
+        +string DiaChi
+        +string VaiTro
+        +DateTime? NgayDangKy
+        +bool? TrangThai
+    }
+
+    class LinhKien {
+        +int MaLinhKien
+        +int MaDanhMuc
+        +int? MaDanhMucPhu
+        +string TenLinhKien
+        +string HangXe
+        +decimal? GiaNiemYet
+        +decimal GiaBan
+        +int? SoLuongTon
+        +string MoTa
+        +string HinhAnh
+        +string NhanHieu
+        +bool TrangThai
+        +bool? SanPhamHot
+        +bool? SanPhamGiamGia
+    }
+
+    class DanhMuc {
+        +int MaDanhMuc
+        +string TenDanhMuc
+    }
+
+    class DongXe {
+        +int MaXe
+        +string HangXe
+        +string TenXe
+        +int? DoiXe
+    }
+
+    class GioHang {
+        +int MaGioHang
+        +int MaNguoiDung
+        +DateTime NgayCapNhat
+    }
+
+    class ChiTietGioHang {
+        +int MaGioHang
+        +int MaLinhKien
+        +int SoLuong
+    }
+
+    class DonHang {
+        +int MaDonHang
+        +int MaNguoiDung
+        +DateTime? NgayDat
+        +decimal TongTien
+        +decimal? GiamGia
+        +string MaGiamGiaCode
+        +string PhuongThucThanhToan
+        +string TrangThaiThanhToan
+        +string TrangThaiDon
+        +string TenNguoiNhan
+        +string SdtNhanHang
+        +string DiaChiGiaoHang
+        +string MaVanDon
+        +string DonViVanChuyen
+        +string LyDoHuy
+        +decimal? PhiVanChuyen
+    }
+
+    class ChiTietDonHang {
+        +int MaDonHang
+        +int MaLinhKien
+        +int SoLuong
+        +decimal DonGia
+    }
+
+    class DanhGia {
+        +int MaDanhGia
+        +int MaLinhKien
+        +int MaNguoiDung
+        +int? SoSao
+        +string NoiDung
+        +DateTime? NgayDanhGia
+    }
+
+    class PhienChat {
+        +int MaPhienChat
+        +int MaNguoiDung
+        +DateTime ThoiGianBatDau
+    }
+
+    class TinNhan {
+        +int MaTinNhan
+        +int MaPhienChat
+        +int MaNguoiGui
+        +string NoiDung
+        +DateTime ThoiGianGui
+        +bool DaDoc
+        +bool DaDocKhach
+        +bool DaDocNhanVien
+    }
+
+    class MaGiamGia {
+        +int MaGiamGia
+        +string MaCode
+        +string TenKhuyenMai
+        +string LoaiGiam
+        +decimal GiaTri
+        +decimal? GiamToiDa
+        +decimal DonHangToiThieu
+        +int? SoLuong
+        +int DaDung
+        +DateTime? NgayBatDau
+        +DateTime? NgayKetThuc
+        +bool TrangThai
+    }
+
+    class PhieuKho {
+        +int MaPhieu
+        +int MaLinhKien
+        +string LoaiPhieu
+        +int SoLuong
+        +int SoLuongTruoc
+        +int SoLuongSau
+        +string LyDo
+        +string GhiChu
+        +DateTime ThoiGian
+        +int MaNguoiDung
+    }
+
+    class AnhSanPham {
+        +int MaAnh
+        +int MaLinhKien
+        +string DuongDanAnh
+        +bool LaAnhChinh
+        +int ThuTu
+    }
+
+    class NhatKyHoatDong {
+        +int Id
+        +int? MaNguoiDung
+        +string TenDangNhap
+        +string HanhDong
+        +string DoiTuong
+        +string ChiTiet
+        +string DiaChiIP
+        +DateTime ThoiGian
+    }
+}
+
+' ======= QUAN HỆ =======
+NguoiDung "1" -- "0..*" DonHang : đặt
+NguoiDung "1" -- "0..1" GioHang : có
+GioHang "1" -- "0..*" ChiTietGioHang : chứa
+ChiTietGioHang "0..*" -- "1" LinhKien : thuộc
+
+DonHang "1" -- "0..*" ChiTietDonHang : gồm
+ChiTietDonHang "0..*" -- "1" LinhKien : thuộc
+
+DanhMuc "1" -- "0..*" LinhKien : phân loại
+LinhKien "1" -- "0..*" AnhSanPham : có
+LinhKien "0..*" -- "0..*" DongXe : tương thích
+LinhKien "1" -- "0..*" DanhGia : được
+NguoiDung "1" -- "0..*" DanhGia : viết
+
+NguoiDung "1" -- "0..*" PhienChat : tạo
+PhienChat "1" -- "0..*" TinNhan : gồm
+
+NguoiDung "1" -- "0..*" PhieuKho : thực hiện
+LinhKien "1" -- "0..*" PhieuKho : được
+
+NguoiDung "1" -- "0..*" NhatKyHoatDong : ghi
+
+@enduml

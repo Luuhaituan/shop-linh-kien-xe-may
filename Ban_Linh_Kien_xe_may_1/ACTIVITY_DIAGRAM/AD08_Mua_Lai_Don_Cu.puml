@@ -1,0 +1,91 @@
+@startuml AD08_Mua_Lai_Don_Cu
+
+skinparam backgroundColor #F0FFF4
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActivityBorderColor #2E7D32
+skinparam ActivityBackgroundColor #C8E6C9
+skinparam ActivityDiamondBackgroundColor #FFF9C4
+skinparam ActivityDiamondBorderColor #F9A825
+skinparam ActivityStartColor #2E7D32
+skinparam ActivityEndColor #1565C0
+skinparam ArrowColor #2E7D32
+skinparam NoteBackgroundColor #FFF9C4
+skinparam NoteBorderColor #F9A825
+
+title
+    <b><size:16>AD-08: Mua Lai Don Hang Cu</size></b>
+    <size:11>He Thong Ban Linh Kien Xe May</size>
+    <size:10>API: MuaLaiApi.ashx | Bang: ChiTietDonHang, GioHang, ChiTietGioHang</size>
+end title
+
+|#F0FFF4| User (DonHang.aspx) |
+|#E3F2FD| MuaLaiApi.ashx |
+|#E8F5E9| Database (SQL Server) |
+
+|User (DonHang.aspx)|
+start
+:Xem danh sach don hang cu;
+:Chon don hang muon mua lai;
+:Nhan nut "Mua Lai";
+:Gui GET:\nMuaLaiApi.ashx?id={maDonHang};
+
+|MuaLaiApi.ashx|
+:Nhan request;
+if (Session["User"] ton tai?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Chua dang nhap";
+  stop
+else (Co)
+endif
+
+:Lay MaNguoiDung tu Session;
+
+|Database (SQL Server)|
+:SELECT MaLinhKien, SoLuong\nFROM ChiTietDonHang\nWHERE MaDonHang = @maDH;
+
+|MuaLaiApi.ashx|
+:Tim/tao GioHang hien tai;
+
+|Database (SQL Server)|
+:SELECT MaGioHang FROM GioHang\nWHERE MaNguoiDung = @mand;
+
+|MuaLaiApi.ashx|
+if (GioHang ton tai?) then (Khong)
+  |Database (SQL Server)|
+  :INSERT INTO GioHang\n(MaNguoiDung, NgayCapNhat)\nVALUES (@mand, GETDATE());
+  |MuaLaiApi.ashx|
+  :Lay MaGioHang moi;
+else (Co)
+endif
+
+:Lap qua tung SP\ntrong ChiTietDonHang;
+
+|Database (SQL Server)|
+:SELECT * FROM ChiTietGioHang\nWHERE MaGioHang=@magh\n  AND MaLinhKien=@malk;
+
+|MuaLaiApi.ashx|
+if (SP da co\ntrong gio hien tai?) then (Co)
+  |Database (SQL Server)|
+  #FFF3E0 :UPDATE ChiTietGioHang\nSET SoLuong = SoLuong + @sl\nWHERE MaGioHang=@magh\n  AND MaLinhKien=@malk;
+  note right
+    Cong don so luong
+    khong tao ban ghi trung
+  end note
+else (Chua)
+  |Database (SQL Server)|
+  #D5E8D4 :INSERT INTO ChiTietGioHang\n(MaGioHang, MaLinhKien, SoLuong)\nVALUES (@magh, @malk, @sl);
+endif
+
+:if (Con SP nao nua?) then (Co - lap lai);
+
+:UPDATE GioHang\nSET NgayCapNhat = GETDATE()\nWHERE MaGioHang = @magh;
+
+|MuaLaiApi.ashx|
+:Tra ve:\n{ success: true };
+
+|User (DonHang.aspx)|
+#D5E8D4 :Hien thi thong bao:\n"Da them san pham vao gio hang!";
+:Redirect -> Trang gio hang;
+stop
+
+@enduml

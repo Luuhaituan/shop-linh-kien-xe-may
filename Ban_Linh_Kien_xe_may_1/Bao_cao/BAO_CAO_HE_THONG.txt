@@ -1,0 +1,441 @@
+================================================================
+         BÁO CÁO PHÂN TÍCH VÀ THIẾT KẾ HỆ THỐNG
+            WEBSITE BÁN LINH KIỆN XE MÁY
+                  VanDonMotor
+================================================================
+
+Ngày lập báo cáo : 14/10/2026
+Phiên bản         : 2.0 (Báo cáo phân tích thiết kế)
+Công nghệ         : ASP.NET WebForms (C#) + Entity Framework
+                  + SQL Server + JSON API (ASHX)
+Đường dẫn dự án  : d:\Mon_thuong_mai_dien_tu\
+                  Ban_Linh_Kien_xe_may_1\Ban_Linh_Kien_xe_may_1\
+
+================================================================
+MỤC LỤC
+================================================================
+I.   TỔNG QUAN HỆ THỐNG
+II.  CẤU TRÚC THƯ MỤC VÀ CHỨC NĂNG TỪNG THÀNH PHẦN
+III. CƠ SỞ DỮ LIỆU (CÁC BẢNG – ENTITY)
+IV.  CÁC TRANG GIAO DIỆN (.ASPX)
+V.   CÁC API ENDPOINT (.ASHX)
+VI.  PHÂN QUYỀN HỆ THỐNG
+VII. CÁC TÍNH NĂNG ĐÃ HOÀN THÀNH
+VIII.CÔNG NGHỆ & THƯ VIỆN SỬ DỤNG
+IX.  MÔ HÌNH BIỂU ĐỒ (PlantUML)
+X.   HƯỚNG DẪN SỬ DỤNG PLANTUML
+
+
+================================================================
+I. TỔNG QUAN HỆ THỐNG
+================================================================
+Website thương mại điện tử VanDonMotor là hệ thống bán linh
+kiện xe máy trực tuyến, cho phép khách hàng:
+    - Duyệt sản phẩm theo danh mục / dòng xe
+    - Thêm vào giỏ hàng và đặt hàng
+    - Thanh toán trực tuyến (Chuyển khoản ngân hàng qua SePay,
+      hoặc COD – Thanh toán khi nhận hàng)
+    - Đánh giá sản phẩm sau khi mua
+    - Chat trực tiếp với nhân viên hỗ trợ
+
+  Và cho phép quản trị viên:
+    - Quản lý sản phẩm / danh mục / dòng xe
+    - Quản lý khách hàng / nhân viên
+    - Xử lý đơn hàng và quản lý tồn kho
+    - Tạo mã khuyến mãi
+    - Xem thống kê doanh thu và nhật ký hoạt động
+
+Hệ thống tuân theo mô hình 3 tầng:
+  - Tầng trình bày   : Các trang ASPX + JS (app.js, auth.js)
+  - Tầng API          : Các HTTP Handler (.ashx) trả JSON
+  - Tầng dữ liệu     : Entity Framework (EDMX) + SQL Server
+
+
+================================================================
+II. CẤU TRÚC THƯ MỤC VÀ CHỨC NĂNG TỪNG THÀNH PHẦN
+================================================================
+Dự án có cấu trúc thư mục như sau:
+
+[Bao_cao/]                   (Thư mục mới – chứa báo cáo này)
+├── BAO_CAO_HE_THONG.txt      File báo cáo này
+├── UML_TONG_QUAN.puml        Biểu đồ tổng quát
+├── UML_CAC_BIEU_DO_CON/      Thư mục chứa các biểu đồ con
+
+[USECASE/]                   Biểu đồ Use case (đã có sẵn)
+[ACTIVITY_DIAGRAM/]          Biểu độ hoạt động (đã có sẵn)
+[API/]                       Các endpoint API (ASHX)
+├── ChatApi.ashx.cs           Chat hỗ trợ khách hàng
+├── DatHangApi.ashx.cs        Đặt hàng, áp mã giảm giá, trừ kho
+├── DonHangApi.ashx.cs        Lấy danh sách đơn hàng của user
+├── HuyDonHangApi.ashx.cs     Hủy / trả hàng (chính sách 7 ngày)
+├── MuaLaiApi.ashx.cs         Mua lại đơn cũ (đổ vào giỏ)
+├── GioHangApi.ashx.cs        CRUD giỏ hàng (get/add/update/remove)
+├── ChiTietSPApi.ashx.cs      Chi tiết sản phẩm
+├── LinhKienApi.ashx.cs       Danh sách linh kiện + ảnh + dòng xe
+├── DanhMucApi.ashx.cs        Danh mục (phía client)
+├── DanhGiaApi.ashx.cs        Đánh giá (get/add)
+├── CapNhatThongTinApi.ashx.cs Cập nhật SĐT/địa chỉ
+├── CapNhatTaiKhoanApi.ashx.cs Cập nhật tên + email tài khoản
+├── ChangePasswordApi.ashx.cs Đổi mật khẩu
+├── MaGiamGiaApi.ashx.cs      Áp dụng mã giảm giá
+├── SePayWebhook.ashx.cs      Webhook SePay xác nhận CK
+│
+│ [API QUẢN TRỊ (Admin/Nhân viên)]
+├── AdminQuanLyDonHangApi.ashx.cs  DS đơn hàng + đếm pending
+├── CapNhatDonHangApi.ashx.cs      Cập nhật trạng thái đơn
+├── ChiTietDonHangApi.ashx.cs      Chi tiết đơn (admin)
+├── ThongKeApi.ashx.cs             Thống kê doanh thu/top SP
+├── QuanLyNguoiDungApi.ashx.cs     CRUD người dùng
+├── QuanLyKhachHangApi.ashx.cs     DS khách + khóa/mở TK
+├── QuanLySanPham*Api              Thêm/Sửa/Xóa sản phẩm
+├── QuanLyDanhMucApi.ashx.cs       CRUD danh mục
+├── QuanLyDongXeApi.ashx.cs        CRUD dòng xe + tương thích
+├── QuanLyAnhApi.ashx.cs           Upload/Xóa/Đặt ảnh chính
+├── QuanLyKhoApi.ashx.cs           Tồn kho + phiếu kho
+├── QuanLyKhuyenMaiApi.ashx.cs     CRUD mã giảm giá
+├── QuanLyDanhGiaApi.ashx.cs       Ẩn/hiện/xóa đánh giá
+├── NhatKyApi.ashx.cs              Nhật ký hoạt động Admin
+
+[Models/]                   Entity Framework (Database-First)
+├── QuanLyLinhKienModel.edmx File EDMX chính
+├── QuanLyLinhKienModel.Context.cs DbContext
+├── QuanLyLinhKienModel.Designer.cs Auto-generated từ EDMX
+├── NguoiDung.cs              Tài khoản người dùng
+├── LinhKien.cs               Sản phẩm linh kiện
+├── DanhMuc.cs                Danh mục
+├── DongXe.cs                 Dòng xe tương thích
+├── GioHang.cs                Giỏ hàng (1-N với ChiTietGioHang)
+├── ChiTietGioHang.cs         Chi tiết giỏ hàng
+├── DonHang.cs                Đơn hàng
+├── ChiTietDonHang.cs         Chi tiết đơn hàng
+├── DanhGia.cs                Đánh giá sản phẩm
+├── PhienChat.cs              Phiên chat
+└── TinNhan.cs                Tin nhắn trong phiên chat
+
+[Utils/]                    Các lớp tiện ích dùng chung
+├── PhanQuyen.cs              Phân quyền Admin / Nhân viên
+├── EmailHelper.cs            Gửi email SMTP
+├── OtpHelper.cs              Sinh & xác minh OTP
+├── PasswordHelper.cs         Hash & verify mật khẩu
+├── MaGiamGiaHelper.cs        Logic kiểm tra mã giảm giá
+└── NhatKyHelper.cs           Ghi log + lấy connection string
+
+[SQL/]                      Script nâng cấp CSDL
+├── otp_upgrade.sql           Thêm bảng OTP
+├── admin_v2_upgrade.sql      Thêm cột phân quyền Admin v2
+└── khuyenmai_thanhtoan_upgrade.sql Thêm MaGiamGia, MaVanDon...
+
+[images/]                   Thư mục chứa ảnh sản phẩm
+
+Các file gốc ở root:
+├── index.aspx                Trang chủ
+├── SanPham.aspx              Danh sách sản phẩm
+├── ChiTietSanPham.aspx       Chi tiết sản phẩm
+├── DonHang.aspx              Quản lý đơn hàng (user)
+├── ThanhToan.aspx            Trang thanh toán
+├── Dang_nhap.aspx            Đăng nhập (reCAPTCHA v2)
+├── Dang_ky.aspx              Đăng ký (reCAPTCHA v2)
+├── Dang_xuat.aspx            Đăng xuất
+├── Quen_mat_khau.aspx        Quên mật khẩu
+├── TaiKhoan.aspx             Trang tài khoản cá nhân
+├── Admin.aspx                Trang quản trị (SPA)
+├── Dieu_khoan.aspx           Điều khoản dịch vụ
+├── Chi_tiet.aspx             Trang chi tiết phụ
+│
+├── app.js                    JavaScript tổng thể (22 KB)
+├── auth.js                   JavaScript xác thực (2.7 KB)
+├── style.css                 CSS giao diện (29 KB)
+├── auth.css                  CSS trang auth (12 KB)
+└── Web.config                Cấu hình chuỗi kết nối + SMTP
+
+
+================================================================
+III. CƠ SỞ DỮ LIỆU (CÁC BẢNG – ENTITY)
+================================================================
+Hệ thống sử dụng SQL Server với tên CSDL:
+    QuanLyLinhKienXeMay
+
+Các bảng chính:
+ ┌────────────────────────┬──────────────────────────────────┐
+ │ Bảng                   │ Mô tả                            │
+ ├────────────────────────┼──────────────────────────────────┤
+ │ NguoiDung              │ Tài khoản người dùng + VaiTro    │
+ │ LinhKien               │ Sản phẩm linh kiện xe máy       │
+ │ DanhMuc                │ Danh mục phân loại               │
+ │ DongXe                 │ Dòng xe (liên kết n-n với LK)    │
+ │ GioHang                │ Giỏ hàng (1 giỏ/user)            │
+ │ ChiTietGioHang         │ Chi tiết từng SP trong giỏ       │
+ │ DonHang                │ Đơn hàng                         │
+ │ ChiTietDonHang         │ Sản phẩm trong đơn hàng          │
+ │ DanhGia                │ Đánh giá (1 user – 1 sp)         │
+ │ PhienChat              │ Phiên chat hỗ trợ                │
+ │ TinNhan                │ Tin nhắn trong phiên chat        │
+ │ MaGiamGia              │ Mã khuyến mãi (Admin tạo)        │
+ │ PhieuKho               │ Phiếu nhập / xuất / điều chỉnh  │
+ │ AnhSanPham             │ Thư viện ảnh sản phẩm           │
+ │ TuongThichXe           │ Bảng n-n giữa LinhKien – DongXe │
+ │ LichSuDonHang          │ Lịch sử trạng thái đơn hàng     │
+ │ NhatKyHoatDong         │ Nhật ký hoạt động của Admin      │
+ │ DanhGiaAn              │ Đánh giá bị Admin ẩn            │
+ └────────────────────────┴──────────────────────────────────┘
+
+Trường quan trọng trên bảng NguoiDung:
+    MaNguoiDung, TenDangNhap, MatKhau (đã hash), HoTen,
+    SoDienThoai, Email, DiaChi, VaiTro, TrangThai (bool),
+    NgayDangKy
+
+Trường quan trọng trên bảng DonHang:
+    MaDonHang, MaNguoiDung, NgayDat, TongTien,
+    GiamGia, MaGiamGiaCode, PhuongThucThanhToan,
+    TrangThaiThanhToan, TrangThaiDon, TenNguoiNhan,
+    SdtNhanHang, DiaChiGiaoHang, MaVanDon, DonViVanChuyen,
+    LyDoHuy, PhiVanChuyen
+
+Trường quan trọng trên bảng LinhKien:
+    MaLinhKien, MaDanhMuc, MaDanhMucPhu, TenLinhKien,
+    HangXe, GiaNiemYet, GiaBan, SoLuongTon, MoTa,
+    HinhAnh, NhanHieu, TrangThai, SanPhamHot,
+    SanPhamGiamGia
+
+Trường quan trọng trên bảng MaGiamGia:
+    MaGiamGia, MaCode, TenKhuyenMai, LoaiGiam (PhanTram/
+    SoTien), GiaTri, GiamToiDa, DonHangToiThieu, SoLuong,
+    DaDung, NgayBatDau, NgayKetThuc, TrangThai
+
+
+================================================================
+IV. CÁC TRANG GIAO DIỆN (.ASPX)
+================================================================
+ ┌─────────────────────┬──────────────────────────────────────┐
+ │ Trang               │ Chức năng                            │
+ ├─────────────────────┼──────────────────────────────────────┤
+ │ index.aspx          │ Trang chủ – banner, SP nổi bật      │
+ │ SanPham.aspx        │ DS sản phẩm (lọc theo danh mục/dòng)│
+ │ ChiTietSanPham.aspx │ Chi tiết + đánh giá + nút Mua       │
+ │ ThanhToan.aspx      │ Thanh toán (COD / CK + QR / Mã giảm) │
+ │ DonHang.aspx        │ Lịch sử đơn + hủy + mua lại + trả  │
+ │ TaiKhoan.aspx       │ Thông tin cá nhân, đổi MK            │
+ │ Admin.aspx          │ SPA quản trị (12 tab)                │
+ │ Dang_nhap.aspx      │ Form đăng nhập + reCAPTCHA v2        │
+ │ Dang_ky.aspx        │ Form đăng ký + reCAPTCHA v2          │
+ │ Quen_mat_khau.aspx  │ Quên mật khẩu (xác minh email)      │
+ │ Dang_xuat.aspx      │ Xóa session + chuyển về index       │
+ │ Dieu_khoan.aspx     │ Điều khoản dịch vụ                  │
+ └─────────────────────┴──────────────────────────────────────┘
+
+Trang Admin.aspx là SPA với 12 tab:
+   sanpham, danhmuc, dongxe, khachhang, nguoidung,
+   donhang, khuyenmai, kho, danhgia, thongke, nhatky, chat
+
+
+================================================================
+V. CÁC API ENDPOINT (.ASHX)
+================================================================
+Tất cả API trả về JSON, dùng qua AJAX từ JS.
+
+Phía khách hàng (cần đăng nhập trừ một số API):
+ ┌──────────────────────────────┬────────────────────────────┐
+ │ API                          │ Action                     │
+ ├──────────────────────────────┼────────────────────────────┤
+ │ GioHangApi.ashx              │ get/add/remove/update     │
+ │ DatHangApi.ashx              │ tạo đơn (POST form)       │
+ │ DonHangApi.ashx              │ ds đơn user / whoami      │
+ │ HuyDonHangApi.ashx           │ action=huy / hoanhang     │
+ │ MuaLaiApi.ashx               │ đổ sp cũ vào giỏ         │
+ │ ChiTietSPApi.ashx            │ id                        │
+ │ LinhKienApi.ashx             │ ds sản phẩm (admin=1)    │
+ │ DanhMucApi.ashx              │ list danh mục             │
+ │ DanhGiaApi.ashx              │ action=get, action=add    │
+ │ MaGiamGiaApi.ashx            │ action=check, action=promo│
+ │ CapNhatThongTinApi.ashx      │ cập nhật SĐT, địa chỉ    │
+ │ CapNhatTaiKhoanApi.ashx      │ cập nhật tên, email      │
+ │ ChangePasswordApi.ashx       │ đổi mật khẩu             │
+ │ ChatApi.ashx                 │ get_or_create_session    │
+ │                            │ get_messages / send_message│
+ │                            │ get_unread / admin_…     │
+ │                            │ delete_session           │
+ │ SePayWebhook.ashx            │ webhook SePay (no auth)  │
+ └──────────────────────────────┴────────────────────────────┘
+
+Phía quản trị (yêu cầu quyền):
+ ┌──────────────────────────────────┬──────────────────────────┐
+ │ API                              │ Phân quyền              │
+ ├──────────────────────────────────┼──────────────────────────┤
+ │ AdminQuanLyDonHangApi.ashx       │ donhang (Admin/BanHang) │
+ │ CapNhatDonHangApi.ashx           │ donhang                 │
+ │ ThongKeApi.ashx                  │ Admin                   │
+ │ QuanLyNguoiDungApi.ashx          │ Admin (UC06.14-16)      │
+ │ QuanLyKhachHangApi.ashx          │ khachhang               │
+ │ ThemSanPhamApi / SuaSanPham / Xoa│ Admin                   │
+ │ QuanLyDanhMucApi.ashx            │ Admin                   │
+ │ QuanLyDongXeApi.ashx             │ Admin (UC06.19)         │
+ │ QuanLyAnhApi.ashx                │ Admin (UC06.7)          │
+ │ QuanLyKhoApi.ashx                │ kho (NV kho)            │
+ │ QuanLyKhuyenMaiApi.ashx          │ Admin                   │
+ │ QuanLyDanhGiaApi.ashx            │ Admin                   │
+ │ NhatKyApi.ashx                   │ Admin                   │
+ └──────────────────────────────────┴──────────────────────────┘
+
+
+================================================================
+VI. PHÂN QUYỀN HỆ THỐNG (Chi tiết trong Utils\PhanQuyen.cs)
+================================================================
+Hệ thống phân quyền 3 cấp:
+    Admin               – Toàn quyền
+    NhanVien (chung)    – Nhân viên hỗ trợ (chat)
+    NhanVienBanHang     – Xử lý đơn hàng + khách hàng
+    NhanVienKho         – Quản lý kho
+    NhanVienHoTro       – Chat với khách
+    User                – Khách hàng (mặt cửa hàng)
+
+Bảng phân quyền tab Admin:
+ ┌──────────────┬──────────────────────────────────────┐
+ │ Vai trò      │ Quyền                                  │
+ ├──────────────┼──────────────────────────────────────┤
+ │ Admin        │ Tất cả 12 tab                          │
+ │ NV Bán hàng  │ donhang, khachhang                    │
+ │ NV Kho       │ nhà admin, kho                         │
+ │ NV Hỗ trợ   │ chat                                  │
+ │ User         │ Không truy cập Admin                   │
+ └──────────────┴──────────────────────────────────────┘
+
+
+================================================================
+VII. CÁC TÍNH NĂNG ĐÃ HOÀN THÀNH
+================================================================
+[✓] 1. ĐĂNG KÝ TÀI KHOẢN
+       - Họ tên, Tên đăng nhập, Email, SĐT, Mật khẩu
+       - Kiểm tra trùng TenDangNhap, Email, SDT
+       - Tích hợp Google reCAPTCHA v2
+[✓] 2. ĐĂNG NHẬP / ĐĂNG XUẤT
+       - Cho phép đăng nhập bằng username hoặc email
+       - reCAPTCHA v2
+       - Phân quyền Admin → Admin.aspx, User → index.aspx
+[✓] 3. QUÊN MẬT KHẨU
+       - Xác minh cặp TenDangNhap + Email
+       - Đặt lại mật khẩu (hash)
+[✓] 4. GIỎ HÀNG
+       - Thêm/Sửa/Xóa, cập nhật số lượng
+       - Lưu DB (không mất khi reload)
+[✓] 5. ĐẶT HÀNG & THANH TOÁN
+       - Nhập Tên người nhận, SĐT, Địa chỉ
+       - Phương thức: COD hoặc Chuyển khoản
+       - Áp dụng mã giảm giá (validate server-side)
+       - Tự động trừ tồn kho
+       - Tạo mã vận đơn VDyyMMddHHmmss
+[✓] 6. THANH TOÁN SEPAY
+       - Tạo QR code chuyển khoản với nội dung là MaVanDon
+       - SePay gọi webhook khi có CK vào
+       - Đối chiếu mã vận đơn + số tiền → tự cập nhật
+         TrangThaiThanhToan = "Đã thanh toán"
+         TrangThaiDon = "Đã xác nhận"
+[✓] 7. QUẢN LÝ ĐƠN HÀNG (User)
+       - Lịch sử đơn, hủy khi "Chờ xác nhận"
+       - Trả hàng trong 7 ngày sau "Hoàn thành"
+       - Mua lại (đổ SP cũ vào giỏ)
+[✓] 8. CẬP NHẬT THÔNG TIN CÁ NHÂN
+       - Tên, Email (TaiKhoan.aspx)
+       - SĐT, Địa chỉ (TaiKhoan.aspx)
+       - Đổi mật khẩu (ChangePasswordApi)
+[✓] 9. ĐÁNH GIÁ SẢN PHẨM
+       - Chỉ người đã mua mới được đánh giá
+       - Số sao (1-5) + nội dung
+       - Tự tính điểm trung bình
+       - Admin có thể ẩn / xóa đánh giá
+[✓] 10. CHAT HỖ TRỢ
+       - Khách tạo phiên chat với nhân viên
+       - Đánh dấu đã đọc (DaDocKhach / DaDocNhanVien)
+       - Admin có thể xem tất cả phiên
+       - Admin có thể xóa phiên
+[✓] 11. KHU VỰC QUẢN TRỊ (12 chức năng)
+       1) Quản lý Sản phẩm  (CRUD + Upload ảnh + dòng xe)
+       2) Quản lý Danh mục   (CRUD, không xóa nếu còn SP)
+       3) Quản lý Dòng xe    (CRUD + gán SP tương thích)
+       4) Quản lý Khách hàng (DS, khóa/mở, xem LS mua)
+       5) Quản lý Người dùng (CRUD NV, reset MK, đổi vai trò)
+       6) Quản lý Đơn hàng   (DS, cập nhật TT, hủy, vận đơn)
+       7) Quản lý Khuyến mãi (CRUD mã GG, hạn dùng)
+       8) Quản lý Kho         (Tồn kho, phiếu nhập/xuất/điều chỉnh)
+       9) Quản lý Đánh giá   (Ẩn / hiện / xóa)
+       10) Thống kê           (Doanh thu theo ngày, top SP/KH)
+       11) Nhật ký            (Log hoạt động, IP)
+       12) Chat               (Xem & trả lời khách hàng)
+
+
+================================================================
+VIII. CÔNG NGHỆ & THƯ VIỆN SỬ DỤNG
+================================================================
+Backend:
+  - ASP.NET WebForms 4.7.2
+  - Entity Framework 6.5.2 (Database-First, EDMX)
+  - ADO.NET (SqlConnection) cho các tác vụ không qua EDMX
+  - Newtonsoft.Json 13.0.4 (JSON serialization)
+
+Frontend:
+  - HTML5 + CSS3 (style.css 29KB, auth.css 12KB)
+  - JavaScript (app.js 22KB, auth.js 2.7KB)
+  - SweetAlert2 (thông báo)
+  - Google reCAPTCHA v2
+  - QR code hiển thị (qr-code.jpg)
+
+Email & Thanh toán:
+  - SMTP Gmail (luuhaituanl@gmail.com)
+  - SePay Webhook (xác nhận chuyển khoản ngân hàng)
+
+Cơ sở dữ liệu:
+  - SQL Server (QuanLyLinhKienXeMay)
+  - User: motozone_user / Mot@Z0ne2026
+
+Quản lý phiên:
+  - Session["User"] lưu thông tin đăng nhập
+
+
+================================================================
+IX. MÔ HÌNH BIỂU ĐỒ (PlantUML)
+================================================================
+Trong folder Bao_cao này có 1 biểu đồ tổng quát và các biểu
+đồ con, tất cả đều viết bằng PlantUML. Để xem, hãy copy nội
+dung file .puml rồi dán vào https://www.plantuml.com/
+
+  Bao_cao/
+  ├── BAO_CAO_HE_THONG.txt            File này
+  ├── UML_TONG_QUAN.puml              Biểu đồ tổng quát (1)
+  ├── UML_SoDoHeThong.png             Hình minh họa (nếu render)
+  └── UML_CAC_BIEU_DO_CON/
+      ├── SD01_SoDo_UseCase_Tong.puml UC tổng (2)
+      ├── SD02_SoDo_Lop.puml          Sơ đồ lớp (3)
+      ├── SD03_SoDo_TrienKhai.puml    Sơ đồ triển khai (4)
+      ├── SD04_SoDo_ThanhPhan.puml    Sơ đồ thành phần (5)
+      ├── SD05_Activity_DatHang.puml  Hoạt động đặt hàng (6)
+      ├── SD06_Activity_ThanhToan.puml Hoạt động thanh toán (7)
+      ├── SD07_Sequence_DatHang.puml  Trình tuần đặt hàng (8)
+      ├── SD08_Sequence_ThanhToan_SePay.puml  Trình tuần SePay (9)
+      ├── SD09_Sequence_Chat.puml     Trình tuần chat (10)
+      └── SD10_Sequence_Admin_QLDH.puml   Trình tuần Admin (11)
+
+
+================================================================
+X. HƯỚNG DẪN SỬ DỤNG PLANTUML
+================================================================
+Bước 1: Mở trang https://www.plantuml.com/plantuml/uml/
+
+Bước 2: Copy toàn bộ nội dung file .puml trong folder
+Bao_cao hoặc Bao_cao/UML_CAC_BIEU_DO_CON/
+
+Bước 3: Dán vào ô text bên trái của plantuml.com
+
+Bước 4: Hình sẽ tự động render bên phải
+
+Bước 5: Có thể nhấn "Export as PNG/SVG" để tải về
+
+Hoặc dùng VS Code với extension "PlantUML" để preview trực
+tiếp trong IDE.
+
+Lưu ý: Tất cả đường nối trong biểu đồ đều dùng đường thẳng
+(dùng "->" hoặc "-->" thay vì "-[#弧]->"). Bố cục được
+thiết kế đơn giản, dễ đọc.
+
+
+================================================================
+           HẾT BÁO CÁO PHÂN TÍCH THIẾT KẾ
+================================================================

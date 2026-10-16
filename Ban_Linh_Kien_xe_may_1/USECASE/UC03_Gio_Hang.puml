@@ -1,0 +1,142 @@
+@startuml UC03_Gio_Hang
+
+' =============================================
+' CAI DAT GIAO DIEN
+' =============================================
+skinparam backgroundColor #FFFDE7
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #BF360C
+    ArrowColor #E65100
+}
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #FFF3E0
+    BorderColor #E65100
+    BorderThickness 2
+    FontColor #E65100
+    FontStyle bold
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #E65100
+
+title
+    <b><size:18>UC-03: Quan Ly Gio Hang</size></b>
+    <size:12>He Thong Ban Linh Kien Xe May</size>
+    <size:10>(GioHangApi.ashx | Bang: GioHang, ChiTietGioHang)</size>
+end title
+
+' =============================================
+' ACTORS
+' =============================================
+actor "Khach Hang\n(User - Da Dang Nhap)" as User
+actor "GioHangApi\n(ASHX Handler)" as CartAPI #BBDEFB
+
+' =============================================
+' SYSTEM BOUNDARY
+' =============================================
+rectangle "UC-03: Quan Ly Gio Hang" {
+
+    usecase "UC03.1\nThem san pham\nvao gio hang" as UC_AddCart
+    usecase "UC03.2\nChon so luong\nkhi them vao" as UC_ChooseQty
+    usecase "UC03.3\nXem toan bo\ngio hang" as UC_ViewCart
+    usecase "UC03.4\nTinh tong tien\nhien thi" as UC_ShowTotal
+    usecase "UC03.5\nCap nhat so luong\nsan pham trong gio" as UC_UpdateQty
+    usecase "UC03.6\nXoa san pham\nkhoi gio hang" as UC_RemoveItem
+    usecase "UC03.7\nTu dong tao\ngio hang moi" as UC_CreateCart
+    usecase "UC03.8\nCong don so luong\n(neu SP da co trong gio)" as UC_MergeQty
+    usecase "UC03.9\nTu xoa khi\ngiam so luong ve 0" as UC_AutoRemove
+
+}
+
+' =============================================
+' ACTOR LINKS
+' =============================================
+User --> UC_AddCart
+User --> UC_ViewCart
+User --> UC_UpdateQty
+User --> UC_RemoveItem
+
+' =============================================
+' INCLUDE / EXTEND
+' =============================================
+UC_AddCart   ..> UC_ChooseQty  : <<include>>
+UC_AddCart   ..> UC_CreateCart : <<extend>>
+UC_AddCart   ..> UC_MergeQty   : <<extend>>
+
+UC_ViewCart  ..> UC_ShowTotal  : <<include>>
+
+UC_UpdateQty ..> UC_AutoRemove : <<extend>>
+
+' =============================================
+' API CALLS
+' =============================================
+UC_AddCart    --> CartAPI : action=add
+UC_ViewCart   --> CartAPI : action=get
+UC_UpdateQty  --> CartAPI : action=update
+UC_RemoveItem --> CartAPI : action=remove
+
+' =============================================
+' GHI CHU
+' =============================================
+note right of UC_AddCart
+    <b>Yeu cau dang nhap:</b>
+    Kiem tra Session["User"] != null
+    -> Neu chua dang nhap:
+      { success: false,
+        message: "not_logged_in" }
+end note
+
+note right of UC_CreateCart
+    <b>Tu dong kich hoat khi:</b>
+    User chua co gio hang
+    -> Tao ban ghi GioHang moi
+    -> Gan MaNguoiDung
+    -> Luu vao DB
+end note
+
+note right of UC_MergeQty
+    <b>Logic cong don:</b>
+    SP DA co trong gio:
+      SoLuong += soLuongThem
+    SP CHUA co trong gio:
+      Them dong moi vao
+      ChiTietGioHang
+end note
+
+note right of UC_AutoRemove
+    <b>Logic giam ve 0:</b>
+    Neu soLuongMoi <= 0
+    -> Tu xoa SP khoi gio
+    -> Khong de so luong am
+end note
+
+note left of CartAPI
+    <b>GioHangApi.ashx</b>
+    Ho tro 4 action:
+    - get
+    - add (+ qty)
+    - remove
+    - update
+    Luu vao bang:
+    GioHang + ChiTietGioHang
+end note
+
+@enduml

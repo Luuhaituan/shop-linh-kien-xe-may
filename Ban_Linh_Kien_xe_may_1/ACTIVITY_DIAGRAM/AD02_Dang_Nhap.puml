@@ -1,0 +1,88 @@
+@startuml AD02_Dang_Nhap
+
+skinparam backgroundColor #EEF4FF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActivityBorderColor #0D47A1
+skinparam ActivityBackgroundColor #BBDEFB
+skinparam ActivityDiamondBackgroundColor #FFF9C4
+skinparam ActivityDiamondBorderColor #F9A825
+skinparam ActivityStartColor #0D47A1
+skinparam ActivityEndColor #1B5E20
+skinparam ArrowColor #0D47A1
+skinparam NoteBackgroundColor #FFF9C4
+skinparam NoteBorderColor #F9A825
+
+title
+    <b><size:16>AD-02: Dang Nhap He Thong</size></b>
+    <size:11>He Thong Ban Linh Kien Xe May</size>
+    <size:10>Trang: Dang_nhap.aspx | Session["User"] | Phan quyen VaiTro</size>
+end title
+
+|#EEF4FF| Actor (Nguoi Dung) |
+|#E3F2FD| Server (ASP.NET) |
+|#E8F5E9| Database (SQL Server) |
+
+|Actor (Nguoi Dung)|
+start
+:Truy cap Dang_nhap.aspx;
+:Nhap Ten Dang Nhap hoac Email;
+:Nhap Mat Khau;
+:Giai reCAPTCHA v2;
+note right
+  reCAPTCHA bat buoc
+  cho ca User va Admin
+end note
+:Nhan nut "Dang Nhap";
+
+|Server (ASP.NET)|
+:Nhan request POST;
+if (reCAPTCHA hop le?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Xac minh reCAPTCHA that bai";
+  |Actor (Nguoi Dung)|
+  :Hien thi thong bao loi;
+  stop
+else (Co)
+endif
+
+|Database (SQL Server)|
+:SELECT * FROM NguoiDung\nWHERE TenDangNhap = @input\n   OR Email = @input;
+
+|Server (ASP.NET)|
+if (Tim thay NguoiDung?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Ten dang nhap hoac email\nkhong ton tai";
+  |Actor (Nguoi Dung)|
+  :Hien thi thong bao loi;
+  stop
+else (Co)
+endif
+
+if (MatKhau khop?) then (Khong)
+  #FFB3B3 :Tra ve loi:\n"Mat khau khong chinh xac";
+  |Actor (Nguoi Dung)|
+  :Hien thi thong bao loi;
+  stop
+else (Co)
+endif
+
+:Luu thong tin NguoiDung\nvao Session["User"];
+note right
+  Session luu:
+  - MaNguoiDung
+  - HoTen
+  - TenDangNhap
+  - VaiTro
+end note
+
+if (VaiTro = "Admin"?) then (Co)
+  #E1F5FE :Redirect -> Admin.aspx;
+  |Actor (Nguoi Dung)|
+  #E1F5FE :Hien thi trang\nQuan Tri Admin;
+else (Khong / "User")
+  #D5E8D4 :Redirect -> index.aspx;
+  |Actor (Nguoi Dung)|
+  #D5E8D4 :Hien thi trang chu\nCua Hang;
+endif
+stop
+
+@enduml

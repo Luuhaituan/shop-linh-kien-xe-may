@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PlantUML Use Case – Ban Linh Kien Xe May</title>
+  <meta name="description" content="Code PlantUML cho tung Use Case – dan vao plantuml.com de xem bieu do"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#0d0f1a;--bg2:#13162b;--bg3:#1a1e36;--surface:#1f2440;
+      --border:rgba(99,120,255,.18);--primary:#6378ff;--primary2:#8b9fff;
+      --accent:#ff6b9d;--green:#4ade80;--teal:#2dd4bf;--yellow:#ffb347;--purple:#a78bfa;
+      --text:#e2e8f8;--text2:#8892b0;--radius:14px;--radius-sm:8px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+    /* BG blobs */
+    .blobs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+    .blob{position:absolute;border-radius:50%;filter:blur(100px);opacity:.1;animation:fb 20s ease-in-out infinite}
+    .b1{width:500px;height:500px;background:var(--primary);top:-100px;left:-100px}
+    .b2{width:400px;height:400px;background:var(--accent);bottom:-80px;right:-80px;animation-delay:-8s}
+    .b3{width:350px;height:350px;background:var(--teal);top:50%;left:50%;animation-delay:-14s}
+    @keyframes fb{0%,100%{transform:translate(0,0)}40%{transform:translate(25px,-30px)}70%{transform:translate(-20px,15px)}}
+
+    .container{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:32px 20px 80px}
+
+    /* Header */
+    header{text-align:center;padding:52px 0 40px}
+    .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(99,120,255,.15);border:1px solid rgba(99,120,255,.3);color:var(--primary2);font-size:12px;font-weight:700;letter-spacing:.7px;padding:6px 16px;border-radius:999px;text-transform:uppercase;margin-bottom:20px}
+    .dot{width:7px;height:7px;border-radius:50%;background:var(--primary);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.4)}}
+    h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;background:linear-gradient(135deg,#fff 0%,var(--primary2) 50%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px}
+    .sub{color:var(--text2);font-size:15px;max-width:620px;margin:0 auto 12px;line-height:1.7}
+    .hint{display:inline-flex;align-items:center;gap:8px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);color:var(--green);border-radius:999px;padding:8px 20px;font-size:13px;font-weight:600;margin-top:8px}
+
+    /* Steps */
+    .steps{display:flex;justify-content:center;gap:0;flex-wrap:wrap;margin:32px 0 48px}
+    .step{display:flex;align-items:center;gap:10px;padding:12px 20px;background:var(--surface);border:1px solid var(--border)}
+    .step:first-child{border-radius:12px 0 0 12px}
+    .step:last-child{border-radius:0 12px 12px 0}
+    .step-num{width:28px;height:28px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+    .step-txt{font-size:13px;font-weight:500;white-space:nowrap}
+    .step-arr{color:var(--text2);font-size:18px;padding:0 4px}
+
+    /* UC Tabs */
+    .uc-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:32px;position:sticky;top:0;z-index:100;background:rgba(13,15,26,.9);backdrop-filter:blur(20px);padding:12px 0;border-bottom:1px solid var(--border)}
+    .uc-tab{padding:10px 18px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text2);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}
+    .uc-tab:hover{color:var(--text);border-color:var(--primary)}
+    .uc-tab.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 0 20px rgba(99,120,255,.4)}
+
+    /* Content panel */
+    .uc-panel{display:none}
+    .uc-panel.active{display:block}
+
+    /* Panel layout */
+    .panel-header{display:flex;align-items:flex-start;gap:20px;padding:24px 28px;border-radius:var(--radius) var(--radius) 0 0;margin-bottom:0}
+    .panel-icon{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+    .panel-title{font-size:20px;font-weight:800;margin-bottom:4px}
+    .panel-desc{font-size:13px;color:var(--text2);line-height:1.6}
+    .panel-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .tag{font-size:11px;padding:3px 10px;border-radius:999px;border:1px solid;font-weight:600}
+
+    /* Code block */
+    .code-wrap{position:relative;background:#0a0c1a;border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);overflow:hidden}
+    .code-toolbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:var(--bg3);border-bottom:1px solid var(--border)}
+    .code-lang{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--primary2);font-weight:600}
+    .copy-btn{display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:var(--radius-sm);border:1px solid var(--primary);background:rgba(99,120,255,.1);color:var(--primary2);font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+    .copy-btn:hover{background:var(--primary);color:#fff;box-shadow:0 0 16px rgba(99,120,255,.4)}
+    .copy-btn.copied{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}
+    pre{padding:24px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c9d1d9;max-height:600px;overflow-y:auto}
+
+    /* Syntax highlight classes */
+    .kw{color:#ff79c6}
+    .str{color:#f1fa8c}
+    .cmt{color:#6272a4;font-style:italic}
+    .num{color:#bd93f9}
+    .cls{color:#8be9fd}
+    .op{color:#ff6b9d}
+
+    /* Info cards below code */
+    .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:24px}
+    .info-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px}
+    .info-card h4{font-size:13px;font-weight:700;color:var(--primary2);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .info-card ul{list-style:none;display:flex;flex-direction:column;gap:5px}
+    .info-card li{font-size:12px;color:var(--text2);display:flex;gap:6px;align-items:flex-start}
+    .info-card li::before{content:'→';color:var(--primary);flex-shrink:0}
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:var(--bg2)}
+    ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+    /* plantuml link */
+    .plant-link{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:999px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-weight:700;font-size:13px;text-decoration:none;margin-top:16px;transition:opacity .2s;box-shadow:0 4px 20px rgba(99,120,255,.3)}
+    .plant-link:hover{opacity:.85}
+
+    @media(max-width:700px){
+      .steps{flex-direction:column;gap:4px}
+      .step{border-radius:8px!important;width:100%}
+      .step-arr{display:none}
+    }
+  </style>
+</head>
+<body>
+
+<div class="blobs">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+
+<div class="container">
+
+  <header>
+    <div class="badge"><span class="dot"></span>PlantUML · plantuml.com</div>
+    <h1>Use Case Code – PlantUML</h1>
+    <p class="sub">Copy code tung Use Case va dan vao <strong>www.plantuml.com</strong> de xem bieu do truc quan.</p>
+    <div class="hint">✅ Da kiem tra tuong thich voi plantuml.com – khong co loi ky tu</div>
+  </header>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-txt">Chon Use Case muon xem</div></div>
+    <div class="step-arr">›</div>
+    <div class="step"><div class="step-num">2</div><div class="step-txt">Nhan nut Copy Code</div></div>
+    <div class="step-arr">›</div>
+    <div class="step"><div class="step-num">3</div><div class="step-txt">Mo plantuml.com</div></div>
+    <div class="step-arr">›</div>
+    <div class="step"><div class="step-num">4</div><div class="step-txt">Dan vao o Edit va Submit</div></div>
+  </div>
+
+  <a class="plant-link" href="https://www.plantuml.com/plantuml/uml/" target="_blank">🌐 Mo plantuml.com ›</a>
+  <br/><br/>
+
+  <!-- UC Tabs -->
+  <div class="uc-tabs">
+    <button class="uc-tab active" onclick="showTab('uc01',this)">🔑 UC-01 Tai Khoan</button>
+    <button class="uc-tab" onclick="showTab('uc02',this)">🛵 UC-02 San Pham</button>
+    <button class="uc-tab" onclick="showTab('uc03',this)">🛒 UC-03 Gio Hang</button>
+    <button class="uc-tab" onclick="showTab('uc04',this)">💳 UC-04 Dat Hang</button>
+    <button class="uc-tab" onclick="showTab('uc05',this)">📦 UC-05 Don Hang</button>
+    <button class="uc-tab" onclick="showTab('uc06',this)">🛡️ UC-06 Admin</button>
+  </div>
+
+  <!-- ============================================================
+       UC-01
+  ============================================================ -->
+  <div class="uc-panel active" id="panel-uc01">
+    <div class="panel-header" style="background:linear-gradient(135deg,rgba(99,120,255,.12),transparent);border:1px solid rgba(99,120,255,.2);border-radius:var(--radius) var(--radius) 0 0">
+      <div class="panel-icon" style="background:rgba(99,120,255,.2)">🔑</div>
+      <div>
+        <div class="panel-title">UC-01: Quan Ly Tai Khoan</div>
+        <div class="panel-desc">12 use cases · Dang ky, Dang nhap, Dang xuat, Quen mat khau, Cap nhat thong tin ca nhan</div>
+        <div class="panel-tags">
+          <span class="tag" style="border-color:rgba(99,120,255,.4);color:#8b9fff;background:rgba(99,120,255,.1)">Dang_ky.aspx</span>
+          <span class="tag" style="border-color:rgba(99,120,255,.4);color:#8b9fff;background:rgba(99,120,255,.1)">Dang_nhap.aspx</span>
+          <span class="tag" style="border-color:rgba(99,120,255,.4);color:#8b9fff;background:rgba(99,120,255,.1)">Dang_xuat.aspx</span>
+          <span class="tag" style="border-color:rgba(99,120,255,.4);color:#8b9fff;background:rgba(99,120,255,.1)">Quen_mat_khau.aspx</span>
+          <span class="tag" style="border-color:rgba(99,120,255,.4);color:#8b9fff;background:rgba(99,120,255,.1)">Google reCAPTCHA v2</span>
+        </div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span class="code-lang">PlantUML · UC01_Quan_Ly_Tai_Khoan.puml</span>
+        <button class="copy-btn" id="copy-uc01" onclick="copyCode('uc01')">📋 Copy Code</button>
+      </div>
+      <pre id="code-uc01">@startuml UC01_Quan_Ly_Tai_Khoan
+
+' =============================================
+' CAI DAT GIAO DIEN
+' =============================================
+skinparam backgroundColor #F0F4FF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #DDEEFF
+    BorderColor #1565C0
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #0D1B4B
+    ArrowColor #1565C0
+}
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #EEF4FF
+    BorderColor #1565C0
+    BorderThickness 2
+    FontColor #1565C0
+    FontStyle bold
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #1565C0
+
+title
+    &lt;b&gt;&lt;size:18&gt;UC-01: Quan Ly Tai Khoan&lt;/size&gt;&lt;/b&gt;
+    &lt;size:12&gt;He Thong Ban Linh Kien Xe May&lt;/size&gt;
+    &lt;size:10&gt;(Dang_ky.aspx | Dang_nhap.aspx | Dang_xuat.aspx | Quen_mat_khau.aspx)&lt;/size&gt;
+end title
+
+' =============================================
+' ACTORS
+' =============================================
+actor "Khach Vang Lai\n(Guest)" as Guest
+actor "Khach Hang\n(User)" as User
+actor "Quan Tri Vien\n(Admin)" as Admin
+actor "Google\nreCAPTCHA" as Captcha #C8E6C9
+
+' =============================================
+' SYSTEM BOUNDARY
+' =============================================
+rectangle "UC-01: Quan Ly Tai Khoan" {
+
+    usecase "UC01.1\nXem trang chu\n(index.aspx)" as UC_Home
+    usecase "UC01.2\nDang ky\ntai khoan moi" as UC_Register
+    usecase "UC01.3\nDang nhap\nhe thong" as UC_Login
+    usecase "UC01.4\nDang xuat\nhe thong" as UC_Logout
+    usecase "UC01.5\nQuen mat khau\n/ Dat lai" as UC_ForgotPW
+    usecase "UC01.6\nCap nhat thong tin\nca nhan (SDT, Dia chi)" as UC_UpdateInfo
+    usecase "UC01.7\nKiem tra trung\nTen dang nhap" as UC_CheckUser
+    usecase "UC01.8\nKiem tra trung\nEmail" as UC_CheckEmail
+    usecase "UC01.9\nKiem tra trung\nSo dien thoai" as UC_CheckPhone
+    usecase "UC01.10\nXac minh\nreCAPTCHA v2" as UC_Captcha
+    usecase "UC01.11\nXac minh danh tinh\n(Ten DN + Email)" as UC_VerifyID
+    usecase "UC01.12\nPhan quyen\nAdmin / User" as UC_Role
+
+}
+
+' =============================================
+' ACTOR LINKS
+' =============================================
+Guest --> UC_Home
+Guest --> UC_Register
+Guest --> UC_Login
+Guest --> UC_ForgotPW
+
+User  --> UC_Home
+User  --> UC_Logout
+User  --> UC_UpdateInfo
+
+Admin --> UC_Login
+Admin --> UC_Logout
+
+' =============================================
+' INCLUDE / EXTEND
+' =============================================
+UC_Register ..> UC_CheckUser  : &lt;&lt;include&gt;&gt;
+UC_Register ..> UC_CheckEmail : &lt;&lt;include&gt;&gt;
+UC_Register ..> UC_CheckPhone : &lt;&lt;include&gt;&gt;
+UC_Register ..> UC_Captcha    : &lt;&lt;include&gt;&gt;
+
+UC_Login    ..> UC_Captcha    : &lt;&lt;include&gt;&gt;
+UC_Login    ..> UC_Role       : &lt;&lt;include&gt;&gt;
+
+UC_ForgotPW ..> UC_VerifyID   : &lt;&lt;include&gt;&gt;
+
+' =============================================
+' EXTERNAL
+' =============================================
+UC_Captcha --> Captcha : &lt;&lt;calls API&gt;&gt;
+
+' =============================================
+' GHI CHU
+' =============================================
+note right of UC_Register
+    &lt;b&gt;Thong tin dang ky:&lt;/b&gt;
+    - Ho ten
+    - Ten dang nhap (unique)
+    - Email (unique)
+    - So dien thoai (unique)
+    - Mat khau
+    - Vai tro mac dinh: "User"
+    - Redirect sang dang nhap sau 2s
+end note
+
+note right of UC_Login
+    &lt;b&gt;Cach dang nhap:&lt;/b&gt;
+    Ten dang nhap HOAC Email
+    + Mat khau
+    + reCAPTCHA bat buoc
+end note
+
+note right of UC_Role
+    &lt;b&gt;Phan quyen sau dang nhap:&lt;/b&gt;
+    VaiTro = "Admin" -&gt; Admin.aspx
+    VaiTro = "User"  -&gt; index.aspx
+    Luu Session["User"]
+end note
+
+note right of UC_ForgotPW
+    &lt;b&gt;Dat lai mat khau:&lt;/b&gt;
+    Nhap Ten dang nhap + Email
+    -&gt; Neu khop -&gt; cap nhat
+    mat khau moi vao DB
+end note
+
+@enduml</pre>
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>📄 Trang ASPX lien quan</h4>
+        <ul>
+          <li>Dang_ky.aspx (13 KB)</li>
+          <li>Dang_nhap.aspx (6 KB)</li>
+          <li>Dang_xuat.aspx</li>
+          <li>Quen_mat_khau.aspx (3.5 KB)</li>
+          <li>index.aspx (23 KB)</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>🔗 Quan he &lt;&lt;include&gt;&gt;</h4>
+        <ul>
+          <li>UC_Register → UC_CheckUser</li>
+          <li>UC_Register → UC_CheckEmail</li>
+          <li>UC_Register → UC_CheckPhone</li>
+          <li>UC_Register → UC_Captcha</li>
+          <li>UC_Login → UC_Captcha</li>
+          <li>UC_Login → UC_Role</li>
+          <li>UC_ForgotPW → UC_VerifyID</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>👥 Actors</h4>
+        <ul>
+          <li>Guest: Xem chu, Dang ky, Dang nhap, Quen MK</li>
+          <li>User: Dang xuat, Cap nhat TT</li>
+          <li>Admin: Dang nhap, Dang xuat</li>
+          <li>reCAPTCHA: External API (v2)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       UC-02
+  ============================================================ -->
+  <div class="uc-panel" id="panel-uc02">
+    <div class="panel-header" style="background:linear-gradient(135deg,rgba(45,212,191,.12),transparent);border:1px solid rgba(45,212,191,.2);border-radius:var(--radius) var(--radius) 0 0">
+      <div class="panel-icon" style="background:rgba(45,212,191,.2)">🛵</div>
+      <div>
+        <div class="panel-title">UC-02: Duyet & Xem San Pham</div>
+        <div class="panel-desc">11 use cases · Xem danh sach, loc theo danh muc/dong xe, xem chi tiet san pham, gia, ton kho, hinh anh</div>
+        <div class="panel-tags">
+          <span class="tag" style="border-color:rgba(45,212,191,.4);color:#2dd4bf;background:rgba(45,212,191,.1)">SanPham.aspx</span>
+          <span class="tag" style="border-color:rgba(45,212,191,.4);color:#2dd4bf;background:rgba(45,212,191,.1)">ChiTietSanPham.aspx</span>
+          <span class="tag" style="border-color:rgba(45,212,191,.4);color:#2dd4bf;background:rgba(45,212,191,.1)">LinhKienApi.ashx</span>
+          <span class="tag" style="border-color:rgba(45,212,191,.4);color:#2dd4bf;background:rgba(45,212,191,.1)">ChiTietSPApi.ashx</span>
+          <span class="tag" style="border-color:rgba(45,212,191,.4);color:#2dd4bf;background:rgba(45,212,191,.1)">DanhMucApi.ashx</span>
+        </div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span class="code-lang">PlantUML · UC02_Duyet_San_Pham.puml</span>
+        <button class="copy-btn" id="copy-uc02" onclick="copyCode('uc02')">📋 Copy Code</button>
+      </div>
+      <pre id="code-uc02">@startuml UC02_Duyet_San_Pham
+
+skinparam backgroundColor #F0FFF4
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #C8E6C9
+    BorderColor #2E7D32
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #1B5E20
+    ArrowColor #2E7D32
+}
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #E8F5E9
+    BorderColor #2E7D32
+    BorderThickness 2
+    FontColor #2E7D32
+    FontStyle bold
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #2E7D32
+
+title
+    &lt;b&gt;&lt;size:18&gt;UC-02: Duyet &amp; Xem San Pham&lt;/size&gt;&lt;/b&gt;
+    &lt;size:12&gt;He Thong Ban Linh Kien Xe May&lt;/size&gt;
+    &lt;size:10&gt;(SanPham.aspx | ChiTietSanPham.aspx | Dieu_khoan.aspx)&lt;/size&gt;
+end title
+
+actor "Khach Vang Lai\n(Guest)" as Guest
+actor "Khach Hang\n(User)" as User
+actor "LinhKienApi\nChiTietSPApi\nDanhMucApi" as API #BBDEFB
+
+rectangle "UC-02: Duyet &amp; Xem San Pham" {
+
+    usecase "UC02.1\nXem trang chu\n(index.aspx)" as UC_Home
+    usecase "UC02.2\nXem danh sach\nlinh kien xe may" as UC_ListProduct
+    usecase "UC02.3\nLoc theo\nDanh muc" as UC_FilterCategory
+    usecase "UC02.4\nLoc theo\nDong xe tuong thich" as UC_FilterBike
+    usecase "UC02.5\nXem chi tiet\nsan pham" as UC_ProductDetail
+    usecase "UC02.6\nXem gia ban\nva gia niem yet" as UC_Price
+    usecase "UC02.7\nXem so luong\nton kho" as UC_Stock
+    usecase "UC02.8\nXem hinh anh\nsan pham" as UC_Image
+    usecase "UC02.9\nXem mo ta\nchi tiet" as UC_Description
+    usecase "UC02.10\nXem nhan hieu\nva hang xe" as UC_Brand
+    usecase "UC02.11\nXem dieu khoan\ndich vu" as UC_Terms
+
+}
+
+Guest --> UC_Home
+Guest --> UC_ListProduct
+Guest --> UC_ProductDetail
+Guest --> UC_Terms
+
+User --> UC_Home
+User --> UC_ListProduct
+User --> UC_ProductDetail
+User --> UC_Terms
+
+UC_ListProduct   ..> UC_FilterCategory : &lt;&lt;extend&gt;&gt;
+UC_ListProduct   ..> UC_FilterBike     : &lt;&lt;extend&gt;&gt;
+
+UC_ProductDetail ..> UC_Price       : &lt;&lt;include&gt;&gt;
+UC_ProductDetail ..> UC_Stock       : &lt;&lt;include&gt;&gt;
+UC_ProductDetail ..> UC_Image       : &lt;&lt;include&gt;&gt;
+UC_ProductDetail ..> UC_Description : &lt;&lt;include&gt;&gt;
+UC_ProductDetail ..> UC_Brand       : &lt;&lt;include&gt;&gt;
+
+UC_ListProduct   --> API : GET LinhKienApi.ashx\nGET DanhMucApi.ashx
+UC_ProductDetail --> API : GET ChiTietSPApi.ashx\n?id={maLinhKien}
+
+note right of UC_ListProduct
+    &lt;b&gt;Hien thi danh sach:&lt;/b&gt;
+    - Ten linh kien
+    - Hinh anh san pham
+    - Gia ban (GiaBan)
+    - Gia niem yet (GiaNiemYet)
+    - Ten hang xe
+    - Trang thai con hang
+end note
+
+note right of UC_ProductDetail
+    &lt;b&gt;Chi tiet SP qua API:&lt;/b&gt;
+    GET ChiTietSPApi.ashx?id={id}
+    -&gt; TenLinhKien
+    -&gt; GiaBan, HinhAnh
+    -&gt; MoTa, SoLuongTon
+end note
+
+note bottom of UC_FilterCategory
+    &lt;b&gt;Danh muc linh kien:&lt;/b&gt;
+    Dong co, He thong phanh,
+    He thong dien, Lop xe,
+    Nhong xich, v.v.
+end note
+
+@enduml</pre>
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>🔗 Quan he &lt;&lt;extend&gt;&gt;</h4>
+        <ul>
+          <li>UC_ListProduct → UC_FilterCategory</li>
+          <li>UC_ListProduct → UC_FilterBike</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>🔗 Quan he &lt;&lt;include&gt;&gt;</h4>
+        <ul>
+          <li>UC_ProductDetail → UC_Price</li>
+          <li>UC_ProductDetail → UC_Stock</li>
+          <li>UC_ProductDetail → UC_Image</li>
+          <li>UC_ProductDetail → UC_Description</li>
+          <li>UC_ProductDetail → UC_Brand</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>⚙️ API Endpoints</h4>
+        <ul>
+          <li>LinhKienApi.ashx – danh sach SP</li>
+          <li>DanhMucApi.ashx – danh muc</li>
+          <li>ChiTietSPApi.ashx?id=x – chi tiet</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       UC-03
+  ============================================================ -->
+  <div class="uc-panel" id="panel-uc03">
+    <div class="panel-header" style="background:linear-gradient(135deg,rgba(255,179,71,.12),transparent);border:1px solid rgba(255,179,71,.2);border-radius:var(--radius) var(--radius) 0 0">
+      <div class="panel-icon" style="background:rgba(255,179,71,.2)">🛒</div>
+      <div>
+        <div class="panel-title">UC-03: Quan Ly Gio Hang</div>
+        <div class="panel-desc">9 use cases · Them, Xem, Cap nhat so luong, Xoa san pham · Luu vao DB (khong mat khi tat trinh duyet)</div>
+        <div class="panel-tags">
+          <span class="tag" style="border-color:rgba(255,179,71,.4);color:#ffb347;background:rgba(255,179,71,.1)">GioHangApi.ashx</span>
+          <span class="tag" style="border-color:rgba(255,179,71,.4);color:#ffb347;background:rgba(255,179,71,.1)">Bang GioHang</span>
+          <span class="tag" style="border-color:rgba(255,179,71,.4);color:#ffb347;background:rgba(255,179,71,.1)">Bang ChiTietGioHang</span>
+          <span class="tag" style="border-color:rgba(255,179,71,.4);color:#ffb347;background:rgba(255,179,71,.1)">Yeu cau dang nhap</span>
+        </div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span class="code-lang">PlantUML · UC03_Gio_Hang.puml</span>
+        <button class="copy-btn" id="copy-uc03" onclick="copyCode('uc03')">📋 Copy Code</button>
+      </div>
+      <pre id="code-uc03">@startuml UC03_Gio_Hang
+
+skinparam backgroundColor #FFFDE7
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #BF360C
+    ArrowColor #E65100
+}
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #FFF3E0
+    BorderColor #E65100
+    BorderThickness 2
+    FontColor #E65100
+    FontStyle bold
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #E65100
+
+title
+    &lt;b&gt;&lt;size:18&gt;UC-03: Quan Ly Gio Hang&lt;/size&gt;&lt;/b&gt;
+    &lt;size:12&gt;He Thong Ban Linh Kien Xe May&lt;/size&gt;
+    &lt;size:10&gt;(GioHangApi.ashx | Bang: GioHang, ChiTietGioHang)&lt;/size&gt;
+end title
+
+actor "Khach Hang\n(User - Da Dang Nhap)" as User
+actor "GioHangApi\n(ASHX Handler)" as CartAPI #BBDEFB
+
+rectangle "UC-03: Quan Ly Gio Hang" {
+
+    usecase "UC03.1\nThem san pham\nvao gio hang" as UC_AddCart
+    usecase "UC03.2\nChon so luong\nkhi them vao" as UC_ChooseQty
+    usecase "UC03.3\nXem toan bo\ngio hang" as UC_ViewCart
+    usecase "UC03.4\nTinh tong tien\nhien thi" as UC_ShowTotal
+    usecase "UC03.5\nCap nhat so luong\nsan pham trong gio" as UC_UpdateQty
+    usecase "UC03.6\nXoa san pham\nkhoi gio hang" as UC_RemoveItem
+    usecase "UC03.7\nTu dong tao\ngio hang moi" as UC_CreateCart
+    usecase "UC03.8\nCong don so luong\n(neu SP da co trong gio)" as UC_MergeQty
+    usecase "UC03.9\nTu xoa khi\ngiam so luong ve 0" as UC_AutoRemove
+
+}
+
+User --> UC_AddCart
+User --> UC_ViewCart
+User --> UC_UpdateQty
+User --> UC_RemoveItem
+
+UC_AddCart   ..> UC_ChooseQty  : &lt;&lt;include&gt;&gt;
+UC_AddCart   ..> UC_CreateCart : &lt;&lt;extend&gt;&gt;
+UC_AddCart   ..> UC_MergeQty   : &lt;&lt;extend&gt;&gt;
+
+UC_ViewCart  ..> UC_ShowTotal  : &lt;&lt;include&gt;&gt;
+
+UC_UpdateQty ..> UC_AutoRemove : &lt;&lt;extend&gt;&gt;
+
+UC_AddCart    --> CartAPI : action=add
+UC_ViewCart   --> CartAPI : action=get
+UC_UpdateQty  --> CartAPI : action=update
+UC_RemoveItem --> CartAPI : action=remove
+
+note right of UC_AddCart
+    &lt;b&gt;Yeu cau dang nhap:&lt;/b&gt;
+    Kiem tra Session["User"] != null
+    -&gt; Neu chua dang nhap:
+      { success: false,
+        message: "not_logged_in" }
+end note
+
+note right of UC_CreateCart
+    &lt;b&gt;Tu dong kich hoat khi:&lt;/b&gt;
+    User chua co gio hang
+    -&gt; Tao ban ghi GioHang moi
+    -&gt; Gan MaNguoiDung
+    -&gt; Luu vao DB
+end note
+
+note right of UC_MergeQty
+    &lt;b&gt;Logic cong don:&lt;/b&gt;
+    SP DA co trong gio:
+      SoLuong += soLuongThem
+    SP CHUA co trong gio:
+      Them dong moi vao
+      ChiTietGioHang
+end note
+
+note left of CartAPI
+    &lt;b&gt;GioHangApi.ashx&lt;/b&gt;
+    Ho tro 4 action:
+    - get
+    - add (+ qty)
+    - remove
+    - update
+    Luu: GioHang + ChiTietGioHang
+end note
+
+@enduml</pre>
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>⚙️ API: GioHangApi.ashx</h4>
+        <ul>
+          <li>action=get – Lay danh sach gio</li>
+          <li>action=add – Them SP (co qty)</li>
+          <li>action=remove – Xoa SP</li>
+          <li>action=update – Cap nhat SL</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>🔗 Quan he chinh</h4>
+        <ul>
+          <li>AddCart includes ChooseQty</li>
+          <li>AddCart extends CreateCart (neu chua co gio)</li>
+          <li>AddCart extends MergeQty (neu SP da co)</li>
+          <li>ViewCart includes ShowTotal</li>
+          <li>UpdateQty extends AutoRemove (qty=0)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       UC-04
+  ============================================================ -->
+  <div class="uc-panel" id="panel-uc04">
+    <div class="panel-header" style="background:linear-gradient(135deg,rgba(167,139,250,.12),transparent);border:1px solid rgba(167,139,250,.2);border-radius:var(--radius) var(--radius) 0 0">
+      <div class="panel-icon" style="background:rgba(167,139,250,.2)">💳</div>
+      <div>
+        <div class="panel-title">UC-04: Dat Hang & Thanh Toan</div>
+        <div class="panel-desc">16 use cases · Xem trang TT, Nhap thong tin giao hang, Chon phuong thuc, Xac nhan dat hang</div>
+        <div class="panel-tags">
+          <span class="tag" style="border-color:rgba(167,139,250,.4);color:#a78bfa;background:rgba(167,139,250,.1)">ThanhToan.aspx</span>
+          <span class="tag" style="border-color:rgba(167,139,250,.4);color:#a78bfa;background:rgba(167,139,250,.1)">DatHangApi.ashx</span>
+          <span class="tag" style="border-color:rgba(167,139,250,.4);color:#a78bfa;background:rgba(167,139,250,.1)">Bang DonHang</span>
+          <span class="tag" style="border-color:rgba(167,139,250,.4);color:#a78bfa;background:rgba(167,139,250,.1)">Bang ChiTietDonHang</span>
+        </div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span class="code-lang">PlantUML · UC04_Dat_Hang_Thanh_Toan.puml</span>
+        <button class="copy-btn" id="copy-uc04" onclick="copyCode('uc04')">📋 Copy Code</button>
+      </div>
+      <pre id="code-uc04">@startuml UC04_Dat_Hang_Thanh_Toan
+
+skinparam backgroundColor #F9F0FF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #E1BEE7
+    BorderColor #6A1B9A
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #4A148C
+    ArrowColor #6A1B9A
+}
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #F3E5F5
+    BorderColor #6A1B9A
+    BorderThickness 2
+    FontColor #6A1B9A
+    FontStyle bold
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #6A1B9A
+
+title
+    &lt;b&gt;&lt;size:18&gt;UC-04: Dat Hang &amp; Thanh Toan&lt;/size&gt;&lt;/b&gt;
+    &lt;size:12&gt;He Thong Ban Linh Kien Xe May&lt;/size&gt;
+    &lt;size:10&gt;(ThanhToan.aspx | DatHangApi.ashx | Bang: DonHang, ChiTietDonHang)&lt;/size&gt;
+end title
+
+actor "Khach Hang\n(User - Da Dang Nhap)" as User
+actor "DatHangApi\n(ASHX Handler)" as OrderAPI #BBDEFB
+
+rectangle "UC-04: Dat Hang &amp; Thanh Toan" {
+
+    usecase "UC04.1\nXem trang\nthanh toan\n(ThanhToan.aspx)" as UC_CheckoutPage
+    usecase "UC04.2\nHien thi thong tin\ngio hang hien tai" as UC_ShowCart
+    usecase "UC04.3\nNhap thong tin\nnguoi nhan hang" as UC_FillShipping
+    usecase "UC04.4\nNhap ho ten\nnguoi nhan" as UC_FillName
+    usecase "UC04.5\nNhap so dien thoai\ngiao hang" as UC_FillPhone
+    usecase "UC04.6\nNhap dia chi\ngiao hang" as UC_FillAddress
+    usecase "UC04.7\nChon phuong thuc\nthanh toan" as UC_PayMethod
+    usecase "UC04.8\nThanh toan\ntien mat (COD)" as UC_COD
+    usecase "UC04.9\nThanh toan\nchuyen khoan" as UC_BankTransfer
+    usecase "UC04.10\nKiem tra gio hang\nkhong duoc rong" as UC_CheckCartEmpty
+    usecase "UC04.11\nXac nhan\ndat hang" as UC_PlaceOrder
+    usecase "UC04.12\nTinh tong tien\ntoi gio hang" as UC_CalcTotal
+    usecase "UC04.13\nTao don hang\nmoi trong DB" as UC_CreateOrder
+    usecase "UC04.14\nLuu chi tiet\ndon hang" as UC_SaveOrderDetail
+    usecase "UC04.15\nCap nhat thong tin\nvao ho so nguoi dung" as UC_UpdateProfile
+    usecase "UC04.16\nXoa gio hang\nsau khi dat thanh cong" as UC_ClearCart
+
+}
+
+User --> UC_CheckoutPage
+User --> UC_FillShipping
+User --> UC_PayMethod
+User --> UC_PlaceOrder
+
+UC_CheckoutPage ..> UC_ShowCart        : &lt;&lt;include&gt;&gt;
+
+UC_FillShipping ..> UC_FillName        : &lt;&lt;include&gt;&gt;
+UC_FillShipping ..> UC_FillPhone       : &lt;&lt;include&gt;&gt;
+UC_FillShipping ..> UC_FillAddress     : &lt;&lt;include&gt;&gt;
+
+UC_PayMethod    ..> UC_COD             : &lt;&lt;extend&gt;&gt;
+UC_PayMethod    ..> UC_BankTransfer    : &lt;&lt;extend&gt;&gt;
+
+UC_PlaceOrder   ..> UC_CheckCartEmpty  : &lt;&lt;include&gt;&gt;
+UC_PlaceOrder   ..> UC_CalcTotal       : &lt;&lt;include&gt;&gt;
+UC_PlaceOrder   ..> UC_CreateOrder     : &lt;&lt;include&gt;&gt;
+UC_PlaceOrder   ..> UC_SaveOrderDetail : &lt;&lt;include&gt;&gt;
+UC_PlaceOrder   ..> UC_UpdateProfile   : &lt;&lt;include&gt;&gt;
+UC_PlaceOrder   ..> UC_ClearCart       : &lt;&lt;include&gt;&gt;
+
+UC_PlaceOrder --> OrderAPI : POST DatHangApi.ashx\n(ten, sdt, diaChi, ptThanhToan)
+
+note right of UC_PlaceOrder
+    &lt;b&gt;Luong xu ly (DatHangApi.ashx):&lt;/b&gt;
+    1. Kiem tra Session["User"] != null
+    2. Kiem tra gio hang khong rong
+    3. Tinh tong = SUM(SoLuong x GiaBan)
+    4. Cap nhat HoTen,SDT,DiaChi -&gt; NguoiDung
+    5. Tao DonHang moi:
+       TrangThaiDon = "Cho xac nhan"
+       TrangThaiTT  = "Chua thanh toan"
+    6. INSERT tung dong -&gt; ChiTietDonHang
+    7. DELETE toan bo ChiTietGioHang
+    8. Tra ve { success: true, maDonHang }
+end note
+
+note right of UC_PayMethod
+    &lt;b&gt;Phuong thuc thanh toan:&lt;/b&gt;
+    - COD: Thanh toan khi nhan hang
+    - Chuyen khoan ngan hang
+      (Kem anh QR code: qr-code.jpg)
+end note
+
+note bottom of UC_CheckCartEmpty
+    &lt;b&gt;Kiem tra gio hang:&lt;/b&gt;
+    Neu gio rong hoac null
+    -&gt; { success: false,
+         message: "Gio hang trong!" }
+    -&gt; Khong cho phep dat hang
+end note
+
+@enduml</pre>
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>🔗 PlaceOrder &lt;&lt;include&gt;&gt;</h4>
+        <ul>
+          <li>CheckCartEmpty – gio khong rong</li>
+          <li>CalcTotal – tinh tong tien</li>
+          <li>CreateOrder – tao don hang</li>
+          <li>SaveOrderDetail – luu chi tiet</li>
+          <li>UpdateProfile – luu thong tin ND</li>
+          <li>ClearCart – xoa gio hang</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>🔗 PayMethod &lt;&lt;extend&gt;&gt;</h4>
+        <ul>
+          <li>COD – Thanh toan khi nhan</li>
+          <li>BankTransfer – Chuyen khoan (QR)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       UC-05
+  ============================================================ -->
+  <div class="uc-panel" id="panel-uc05">
+    <div class="panel-header" style="background:linear-gradient(135deg,rgba(74,222,128,.12),transparent);border:1px solid rgba(74,222,128,.2);border-radius:var(--radius) var(--radius) 0 0">
+      <div class="panel-icon" style="background:rgba(74,222,128,.2)">📦</div>
+      <div>
+        <div class="panel-title">UC-05: Quan Ly Don Hang</div>
+        <div class="panel-desc">12 use cases · Xem lich su, huy don, tra hang, mua lai · Chinh sach 7 ngay tra hang</div>
+        <div class="panel-tags">
+          <span class="tag" style="border-color:rgba(74,222,128,.4);color:#4ade80;background:rgba(74,222,128,.1)">DonHang.aspx</span>
+          <span class="tag" style="border-color:rgba(74,222,128,.4);color:#4ade80;background:rgba(74,222,128,.1)">DonHangApi.ashx</span>
+          <span class="tag" style="border-color:rgba(74,222,128,.4);color:#4ade80;background:rgba(74,222,128,.1)">HuyDonHangApi.ashx</span>
+          <span class="tag" style="border-color:rgba(74,222,128,.4);color:#4ade80;background:rgba(74,222,128,.1)">MuaLaiApi.ashx</span>
+        </div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span class="code-lang">PlantUML · UC05_Quan_Ly_Don_Hang.puml</span>
+        <button class="copy-btn" id="copy-uc05" onclick="copyCode('uc05')">📋 Copy Code</button>
+      </div>
+      <pre id="code-uc05">@startuml UC05_Quan_Ly_Don_Hang
+
+skinparam backgroundColor #F0FFF8
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #B2DFDB
+    BorderColor #00695C
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #004D40
+    ArrowColor #00695C
+}
+skinparam actor {
+    BackgroundColor #FFE0B2
+    BorderColor #E65100
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #E0F2F1
+    BorderColor #00695C
+    BorderThickness 2
+    FontColor #00695C
+    FontStyle bold
+    FontSize 14
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #00695C
+
+title
+    &lt;b&gt;&lt;size:18&gt;UC-05: Quan Ly Don Hang&lt;/size&gt;&lt;/b&gt;
+    &lt;size:12&gt;He Thong Ban Linh Kien Xe May&lt;/size&gt;
+    &lt;size:10&gt;(DonHang.aspx | DonHangApi | HuyDonHangApi | MuaLaiApi)&lt;/size&gt;
+end title
+
+actor "Khach Hang\n(User - Da Dang Nhap)" as User
+actor "DonHangApi\nHuyDonHangApi\nMuaLaiApi" as API #BBDEFB
+
+rectangle "UC-05: Quan Ly Don Hang" {
+
+    usecase "UC05.1\nXem lich su\ndon hang\n(DonHang.aspx)" as UC_History
+    usecase "UC05.2\nXem chi tiet\ntung don hang" as UC_Detail
+    usecase "UC05.3\nXem trang thai\ndon hang" as UC_Status
+    usecase "UC05.4\nXem danh sach\nSP trong don" as UC_Items
+    usecase "UC05.5\nHuy don hang\n(Chi khi: Cho xac nhan)" as UC_Cancel
+    usecase "UC05.6\nKiem tra trang thai\n= Cho xac nhan" as UC_CheckWaiting
+    usecase "UC05.7\nYeu cau tra hang\n/ hoan tien" as UC_Return
+    usecase "UC05.8\nKiem tra trang thai\n= Hoan thanh" as UC_CheckDone
+    usecase "UC05.9\nKiem tra chinh sach\n7 ngay tra hang" as UC_Check7Days
+    usecase "UC05.10\nMua lai\ndon hang cu" as UC_ReOrder
+    usecase "UC05.11\nThem SP cu\nvao gio hang" as UC_AddToCart
+    usecase "UC05.12\nCong don so luong\nneu da co trong gio" as UC_MergeQty
+
+}
+
+User --> UC_History
+User --> UC_Cancel
+User --> UC_Return
+User --> UC_ReOrder
+
+UC_History ..> UC_Detail : &lt;&lt;include&gt;&gt;
+UC_Detail  ..> UC_Status : &lt;&lt;include&gt;&gt;
+UC_Detail  ..> UC_Items  : &lt;&lt;include&gt;&gt;
+
+UC_Cancel  ..> UC_CheckWaiting : &lt;&lt;include&gt;&gt;
+
+UC_Return  ..> UC_CheckDone  : &lt;&lt;include&gt;&gt;
+UC_Return  ..> UC_Check7Days : &lt;&lt;include&gt;&gt;
+
+UC_ReOrder  ..> UC_AddToCart : &lt;&lt;include&gt;&gt;
+UC_AddToCart ..> UC_MergeQty : &lt;&lt;extend&gt;&gt;
+
+UC_History ..> API : GET DonHangApi.ashx
+UC_Cancel  ..> API : POST HuyDonHangApi.ashx\n?action=huy&amp;id={maDonHang}
+UC_Return  ..> API : POST HuyDonHangApi.ashx\n?action=hoanhang&amp;id={maDonHang}
+UC_ReOrder ..> API : GET MuaLaiApi.ashx\n?id={maDonHang}
+
+note right of UC_Status
+    &lt;b&gt;Vong doi trang thai don hang:&lt;/b&gt;
+    [Cho xac nhan]
+       -&gt; (Admin xac nhan)
+    [Dang xu ly]
+       -&gt;
+    [Dang giao hang]
+       -&gt;
+    [Hoan thanh]
+       -&gt; (trong 7 ngay)
+    [Tra hang/Hoan tien]
+
+    HOAC:
+    [Cho xac nhan] -&gt; [Da huy]
+       (User tu huy)
+end note
+
+note right of UC_Cancel
+    &lt;b&gt;Dieu kien huy don:&lt;/b&gt;
+    [OK]  TrangThaiDon = "Cho xac nhan"
+    [LOI] Cac trang thai khac -&gt; Tu choi
+
+    &lt;b&gt;Ket qua:&lt;/b&gt;
+    TrangThaiDon = "Da huy"
+end note
+
+note right of UC_Return
+    &lt;b&gt;Dieu kien tra hang:&lt;/b&gt;
+    [OK]  TrangThaiDon = "Hoan thanh"
+    [OK]  NgayDat cach hien tai &lt;= 7 ngay
+    [LOI] Qua 7 ngay -&gt; Tu choi
+
+    &lt;b&gt;Ket qua:&lt;/b&gt;
+    TrangThaiDon = "Tra hang/Hoan tien"
+end note
+
+note right of UC_ReOrder
+    &lt;b&gt;Luong Mua Lai (MuaLaiApi.ashx):&lt;/b&gt;
+    1. Lay ChiTietDonHang cua don cu
+    2. Tim/tao GioHang hien tai
+    3. Voi tung san pham:
+       - Da co trong gio -&gt; cong don SL
+       - Chua co -&gt; them moi
+    4. Chuyen huong -&gt; trang gio hang
+end note
+
+@enduml</pre>
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>⚙️ API Endpoints</h4>
+        <ul>
+          <li>GET DonHangApi.ashx – lich su don</li>
+          <li>POST HuyDonHangApi?action=huy – huy don</li>
+          <li>POST HuyDonHangApi?action=hoanhang – tra hang</li>
+          <li>GET MuaLaiApi?id=x – mua lai</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>📋 Dieu kien nghiep vu</h4>
+        <ul>
+          <li>Huy don: Chi khi "Cho xac nhan"</li>
+          <li>Tra hang: "Hoan thanh" + trong 7 ngay</li>
+          <li>Mua lai: Cong don vao gio hien tai</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       UC-06
+  ============================================================ -->
+  <div class="uc-panel" id="panel-uc06">
+    <div class="panel-header" style="background:linear-gradient(135deg,rgba(239,154,154,.12),transparent);border:1px solid rgba(239,154,154,.2);border-radius:var(--radius) var(--radius) 0 0">
+      <div class="panel-icon" style="background:rgba(239,154,154,.2)">🛡️</div>
+      <div>
+        <div class="panel-title">UC-06: Quan Tri He Thong (Admin)</div>
+        <div class="panel-desc">19 use cases · Quan ly San pham, Don hang, Nguoi dung, Danh muc · Phan quyen VaiTro = "Admin"</div>
+        <div class="panel-tags">
+          <span class="tag" style="border-color:rgba(239,154,154,.4);color:#ef9a9a;background:rgba(239,154,154,.1)">Admin.aspx</span>
+          <span class="tag" style="border-color:rgba(239,154,154,.4);color:#ef9a9a;background:rgba(239,154,154,.1)">Admin_DonHang.aspx</span>
+          <span class="tag" style="border-color:rgba(239,154,154,.4);color:#ef9a9a;background:rgba(239,154,154,.1)">reCAPTCHA bat buoc</span>
+          <span class="tag" style="border-color:rgba(239,154,154,.4);color:#ef9a9a;background:rgba(239,154,154,.1)">Co 4 sub-package</span>
+        </div>
+      </div>
+    </div>
+    <div class="code-wrap">
+      <div class="code-toolbar">
+        <span class="code-lang">PlantUML · UC06_Quan_Tri_Admin.puml</span>
+        <button class="copy-btn" id="copy-uc06" onclick="copyCode('uc06')">📋 Copy Code</button>
+      </div>
+      <pre id="code-uc06">@startuml UC06_Quan_Tri_Admin
+
+skinparam backgroundColor #FFF5F5
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActorStyle awesome
+
+skinparam usecase {
+    BackgroundColor #FFCDD2
+    BorderColor #B71C1C
+    BorderThickness 1.5
+    FontSize 11
+    FontColor #7F0000
+    ArrowColor #B71C1C
+}
+skinparam actor {
+    BackgroundColor #FFCDD2
+    BorderColor #C62828
+    FontColor #1a1a2e
+    FontStyle bold
+}
+skinparam rectangle {
+    BackgroundColor #FFEBEE
+    BorderColor #B71C1C
+    BorderThickness 2
+    FontColor #B71C1C
+    FontStyle bold
+    FontSize 14
+}
+skinparam package {
+    BackgroundColor #FFF3F3
+    BorderColor #EF9A9A
+    BorderThickness 1.5
+    FontColor #C62828
+    FontStyle bold
+}
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+    FontSize 11
+}
+skinparam ArrowColor #B71C1C
+
+title
+    &lt;b&gt;&lt;size:18&gt;UC-06: Quan Tri He Thong (Admin)&lt;/size&gt;&lt;/b&gt;
+    &lt;size:12&gt;He Thong Ban Linh Kien Xe May&lt;/size&gt;
+    &lt;size:10&gt;(Admin.aspx | Admin_DonHang.aspx | Phan quyen VaiTro = "Admin")&lt;/size&gt;
+end title
+
+actor "Quan Tri Vien\n(Admin)" as Admin
+actor "Google\nreCAPTCHA" as Captcha #C8E6C9
+
+rectangle "UC-06: Quan Tri He Thong" {
+
+    usecase "UC06.1\nDang nhap\nvao trang Admin" as UC_Login
+    usecase "UC06.2\nXem trang quan tri\n(Admin.aspx)" as UC_Dashboard
+
+    package "Quan Ly San Pham" {
+        usecase "UC06.3\nXem danh sach\nlinh kien" as UC_ViewProduct
+        usecase "UC06.4\nThem san pham\nmoi" as UC_AddProduct
+        usecase "UC06.5\nSua thong tin\nsan pham" as UC_EditProduct
+        usecase "UC06.6\nXoa / An\nsan pham" as UC_DeleteProduct
+        usecase "UC06.7\nQuan ly\nhinh anh SP" as UC_ManageImage
+        usecase "UC06.8\nQuan ly\nton kho" as UC_ManageStock
+    }
+
+    package "Quan Ly Don Hang" {
+        usecase "UC06.9\nXem tat ca\ndon hang" as UC_ViewOrders
+        usecase "UC06.10\nCap nhat trang thai\ndon hang" as UC_UpdateStatus
+        usecase "UC06.11\nXac nhan\ndon hang" as UC_ConfirmOrder
+        usecase "UC06.12\nXem chi tiet\ntung don" as UC_OrderDetail
+        usecase "UC06.13\nXu ly yeu cau\ntra hang" as UC_HandleReturn
+    }
+
+    package "Quan Ly Nguoi Dung" {
+        usecase "UC06.14\nXem danh sach\nnguoi dung" as UC_ViewUsers
+        usecase "UC06.15\nXem thong tin\ntai khoan" as UC_UserDetail
+        usecase "UC06.16\nKhoa / Mo\ntai khoan" as UC_LockUser
+    }
+
+    package "Quan Ly Danh Muc" {
+        usecase "UC06.17\nXem danh muc\nlinh kien" as UC_ViewCategory
+        usecase "UC06.18\nThem / Sua\nDanh muc" as UC_EditCategory
+        usecase "UC06.19\nQuan ly\nDong xe" as UC_ManageBike
+    }
+
+}
+
+Admin --> UC_Login
+Admin --> UC_Dashboard
+Admin --> UC_ViewProduct
+Admin --> UC_AddProduct
+Admin --> UC_EditProduct
+Admin --> UC_DeleteProduct
+Admin --> UC_ManageStock
+Admin --> UC_ViewOrders
+Admin --> UC_UpdateStatus
+Admin --> UC_ConfirmOrder
+Admin --> UC_HandleReturn
+Admin --> UC_ViewUsers
+Admin --> UC_LockUser
+Admin --> UC_ViewCategory
+Admin --> UC_EditCategory
+Admin --> UC_ManageBike
+
+UC_Login       ..> UC_Dashboard   : &lt;&lt;include&gt;&gt;
+UC_Login       ..> Captcha        : &lt;&lt;include&gt;&gt;
+
+UC_AddProduct  ..> UC_ManageImage : &lt;&lt;include&gt;&gt;
+UC_EditProduct ..> UC_ManageImage : &lt;&lt;include&gt;&gt;
+
+UC_ViewOrders  ..> UC_OrderDetail  : &lt;&lt;include&gt;&gt;
+UC_ViewUsers   ..> UC_UserDetail   : &lt;&lt;include&gt;&gt;
+
+UC_UpdateStatus ..> UC_ConfirmOrder : &lt;&lt;extend&gt;&gt;
+
+note right of UC_UpdateStatus
+    &lt;b&gt;Cac trang thai Admin quan ly:&lt;/b&gt;
+    "Cho xac nhan"
+       -&gt; "Dang xu ly"
+       -&gt; "Dang giao hang"
+       -&gt; "Hoan thanh"
+
+    Xu ly tra hang:
+    "Tra hang/Hoan tien"
+       -&gt; Admin xac nhan hoan tien
+end note
+
+note right of UC_Login
+    &lt;b&gt;Phan quyen dang nhap:&lt;/b&gt;
+    VaiTro = "Admin"
+    -&gt; Redirect Admin.aspx
+    reCAPTCHA bat buoc
+end note
+
+note bottom of UC_DeleteProduct
+    &lt;b&gt;Xoa mem (Soft Delete):&lt;/b&gt;
+    Khong xoa khoi DB
+    -&gt; Dat TrangThai = false
+    -&gt; An khoi giao dien nguoi dung
+end note
+
+@enduml</pre>
+    </div>
+    <div class="info-grid">
+      <div class="info-card">
+        <h4>📦 4 Sub-package</h4>
+        <ul>
+          <li>Quan Ly San Pham (6 UC)</li>
+          <li>Quan Ly Don Hang (5 UC)</li>
+          <li>Quan Ly Nguoi Dung (3 UC)</li>
+          <li>Quan Ly Danh Muc (3 UC)</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>🔗 Quan he chinh</h4>
+        <ul>
+          <li>Login includes Dashboard</li>
+          <li>Login includes reCAPTCHA</li>
+          <li>AddProduct/EditProduct include ManageImage</li>
+          <li>ViewOrders includes OrderDetail</li>
+          <li>UpdateStatus extends ConfirmOrder</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h4>📋 Nghiep vu Admin</h4>
+        <ul>
+          <li>Duyet don: Cho xac nhan → Dang xu ly</li>
+          <li>Giao hang: → Dang giao → Hoan thanh</li>
+          <li>Xoa mem SP: TrangThai=false</li>
+          <li>Xu ly tra hang va hoan tien</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+function showTab(id, btn){
+  document.querySelectorAll('.uc-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.uc-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({top:document.querySelector('.uc-tabs').offsetTop-10,behavior:'smooth'});
+}
+
+function copyCode(id){
+  const pre = document.getElementById('code-'+id);
+  // Get raw text, replace HTML entities back
+  let code = pre.innerText || pre.textContent;
+  // Fix HTML entities that browser might decode differently
+  navigator.clipboard.writeText(code).then(()=>{
+    const btn = document.getElementById('copy-'+id);
+    btn.textContent = '✅ Da Copy!';
+    btn.classList.add('copied');
+    setTimeout(()=>{
+      btn.textContent = '📋 Copy Code';
+      btn.classList.remove('copied');
+    }, 2500);
+  });
+}
+
+// Animate panels
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'}});
+},{threshold:.1});
+document.querySelectorAll('.info-card').forEach(el=>{
+  el.style.opacity='0';el.style.transform='translateY(20px)';
+  el.style.transition='opacity .4s, transform .4s';
+  io.observe(el);
+});
+</script>
+</body>
+</html>

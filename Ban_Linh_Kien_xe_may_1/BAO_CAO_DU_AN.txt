@@ -1,0 +1,253 @@
+==============================================================
+   BÁO CÁO TỔNG HỢP DỰ ÁN: BÁN LINH KIỆN XE MÁY TRỰC TUYẾN
+==============================================================
+Ngày tạo báo cáo : 15/09/2026
+Công nghệ sử dụng : ASP.NET WebForms (C#), Entity Framework, SQL Server, JSON API (ASHX)
+Thư mục dự án   : d:\Mon_thuong_mai_dien_tu\Ban_Linh_Kien_xe_may_1\Ban_Linh_Kien_xe_may_1\
+
+
+==============================================================
+I. TỔNG QUAN DỰ ÁN
+==============================================================
+Đây là một website thương mại điện tử bán linh kiện xe máy, được xây dựng
+bằng nền tảng ASP.NET WebForms kết hợp với Entity Framework (Database-First)
+để giao tiếp với cơ sở dữ liệu SQL Server.
+
+Dự án được tổ chức theo mô hình phân tầng:
+  - Tầng giao diện  : Các trang .aspx (ASPX WebForms)
+  - Tầng API        : Các HTTP Handler (.ashx) trả về JSON
+  - Tầng dữ liệu   : Entity Framework Model (.edmx) ánh xạ từ SQL Server
+
+
+==============================================================
+II. CƠ SỞ DỮ LIỆU - CÁC BẢNG ĐÃ XÂY DỰNG (Models)
+==============================================================
+Tên file EDMX: QuanLyLinhKienModel.edmx
+
+  1. NguoiDung       - Lưu thông tin tài khoản người dùng
+                       (MaNguoiDung, HoTen, TenDangNhap, MatKhau, Email,
+                        SoDienThoai, DiaChi, VaiTro)
+
+  2. LinhKien        - Lưu thông tin sản phẩm linh kiện xe máy
+                       (MaLinhKien, MaDanhMuc, TenLinhKien, HangXe,
+                        GiaNiemYet, GiaBan, SoLuongTon, MoTa, HinhAnh,
+                        NhanHieu, TrangThai)
+
+  3. DanhMuc         - Danh mục phân loại linh kiện
+  4. DongXe          - Thông tin dòng xe tương thích với linh kiện
+  5. GioHang         - Giỏ hàng của người dùng (MaGioHang, MaNguoiDung, NgayCapNhat)
+  6. ChiTietGioHang  - Chi tiết từng sản phẩm trong giỏ hàng (SoLuong)
+  7. DonHang         - Thông tin đơn hàng
+                       (MaDonHang, MaNguoiDung, NgayDat, TongTien,
+                        TenNguoiNhan, SdtNhanHang, DiaChiGiaoHang,
+                        PhuongThucThanhToan, TrangThaiThanhToan, TrangThaiDon)
+  8. ChiTietDonHang  - Chi tiết sản phẩm trong từng đơn (SoLuong, DonGia)
+  9. DanhGia         - Đánh giá sản phẩm từ người dùng
+  10. PhienChat      - Phiên chat hỗ trợ khách hàng
+  11. TinNhan        - Tin nhắn trong phiên chat
+
+
+==============================================================
+III. CÁC TRANG GIAO DIỆN ĐÃ HOÀN THÀNH (ASPX)
+==============================================================
+
+  1. index.aspx         - TRANG CHỦ
+     Kích thước: 23.265 bytes
+     Nội dung  : Giao diện trang chủ của website
+
+  2. SanPham.aspx       - DANH SÁCH SẢN PHẨM
+     Kích thước: 13.544 bytes
+     Nội dung  : Hiển thị danh sách linh kiện xe máy
+
+  3. ChiTietSanPham.aspx - CHI TIẾT SẢN PHẨM
+     Kích thước: 21.593 bytes
+     Nội dung  : Hiển thị thông tin chi tiết của từng sản phẩm
+
+  4. DonHang.aspx       - QUẢN LÝ ĐƠN HÀNG
+     Kích thước: 25.256 bytes
+     Nội dung  : Xem danh sách đơn hàng của người dùng
+
+  5. ThanhToan.aspx     - TRANG THANH TOÁN
+     Kích thước: 21.563 bytes
+     Nội dung  : Form điền thông tin và xác nhận đặt hàng
+
+  6. Dang_nhap.aspx     - ĐĂNG NHẬP
+     Kích thước: 6.450 bytes
+     Nội dung  : Form đăng nhập có tích hợp Google reCAPTCHA v2
+
+  7. Dang_ky.aspx       - ĐĂNG KÝ TÀI KHOẢN
+     Kích thước: 13.114 bytes
+     Nội dung  : Form đăng ký có kiểm tra trùng lặp và reCAPTCHA
+
+  8. Dang_xuat.aspx     - ĐĂNG XUẤT
+     Kích thước: 234 bytes
+     Nội dung  : Xử lý đăng xuất và xóa Session
+
+  9. Quen_mat_khau.aspx - QUÊN MẬT KHẨU
+     Kích thước: 3.500 bytes
+     Nội dung  : Đặt lại mật khẩu bằng cách xác minh tên đăng nhập + email
+
+  10. Dieu_khoan.aspx   - ĐIỀU KHOẢN SỬ DỤNG
+      Kích thước: 6.991 bytes
+      Nội dung  : Trang hiển thị điều khoản dịch vụ
+
+  11. Chi_tiet.aspx     - CHI TIẾT (phụ)
+      Kích thước: 353 bytes
+
+
+==============================================================
+IV. CÁC API ENDPOINT ĐÃ HOÀN THÀNH (ASHX - trả về JSON)
+==============================================================
+
+  1. GioHangApi.ashx       - API QUẢN LÝ GIỎ HÀNG (139 dòng)
+     Các action hỗ trợ:
+       + action=get    : Lấy danh sách sản phẩm trong giỏ hàng
+       + action=add    : Thêm sản phẩm vào giỏ (có thể thêm số lượng cụ thể)
+       + action=remove : Xóa sản phẩm khỏi giỏ hàng
+       + action=update : Cập nhật số lượng sản phẩm (xóa nếu qty=0)
+     Yêu cầu : Đăng nhập (kiểm tra Session["User"])
+     Tự động : Tạo giỏ hàng mới nếu người dùng chưa có
+
+  2. DatHangApi.ashx        - API ĐẶT HÀNG / THANH TOÁN (100 dòng)
+     Nhận dữ liệu : ten, sdt, diaChi, ptThanhToan
+     Xử lý        :
+       + Tính tổng tiền từ giỏ hàng hiện tại
+       + Cập nhật thông tin cá nhân người dùng (HoTen, SoDienThoai, DiaChi)
+       + Tạo đơn hàng mới với trạng thái "Chờ xác nhận"
+       + Sao chép chi tiết giỏ hàng sang chi tiết đơn hàng
+       + Xóa sạch giỏ hàng sau khi đặt thành công
+     Trả về : { success, maDonHang }
+
+  3. DonHangApi.ashx        - API XEM DANH SÁCH ĐƠN HÀNG (58 dòng)
+     Lấy toàn bộ đơn hàng của người dùng hiện tại
+     Sắp xếp : Đơn mới nhất lên đầu (OrderByDescending)
+     Trả về   : Danh sách đơn hàng kèm chi tiết từng sản phẩm
+
+  4. HuyDonHangApi.ashx     - API HỦY / TRẢ HÀNG (97 dòng)
+     Luồng 1 - Hủy đơn (action=huy):
+       + Chỉ cho hủy khi trạng thái là "Chờ xác nhận"
+       + Cập nhật trạng thái → "Đã hủy"
+     Luồng 2 - Trả hàng (action=hoanhang):
+       + Chỉ cho trả khi đơn đã "Hoàn thành"
+       + Kiểm tra chính sách 7 ngày kể từ ngày đặt
+       + Cập nhật trạng thái → "Trả hàng/Hoàn tiền"
+
+  5. MuaLaiApi.ashx         - API MUA LẠI ĐƠN HÀNG CŨ (76 dòng)
+     Lấy toàn bộ sản phẩm từ đơn hàng cũ và ném vào giỏ hàng hiện tại
+     Tự động cộng dồn số lượng nếu sản phẩm đã có trong giỏ
+
+  6. ChiTietSPApi.ashx      - API CHI TIẾT SẢN PHẨM (58 dòng)
+     Nhận: ?id={maLinhKien}
+     Trả về: TenLinhKien, GiaBan, HinhAnh, MoTa, SoLuongTon
+
+  7. LinhKienApi.ashx       - API DANH SÁCH LINH KIỆN (2.077 bytes)
+
+  8. DanhMucApi.ashx        - API DANH MỤC SẢN PHẨM (1.247 bytes)
+
+  9. CapNhatThongTinApi.ashx - API CẬP NHẬT THÔNG TIN CÁ NHÂN (58 dòng)
+     Nhận dữ liệu : sdt, diaChi
+     Xử lý        : Cập nhật SoDienThoai, DiaChi vào database + Session
+
+
+==============================================================
+V. TÍNH NĂNG ĐÃ HOÀN THÀNH
+==============================================================
+
+  [✓] 1. ĐĂNG KÝ TÀI KHOẢN
+          - Nhập: HoTen, TenDangNhap, Email, SoDienThoai, MatKhau
+          - Kiểm tra trùng tên đăng nhập, email, số điện thoại trong DB
+          - Tích hợp Google reCAPTCHA v2 chống bot
+          - Chuyển hướng tự động sang trang đăng nhập sau 2 giây
+
+  [✓] 2. ĐĂNG NHẬP / ĐĂNG XUẤT
+          - Đăng nhập bằng tên đăng nhập HOẶC email + mật khẩu
+          - Tích hợp Google reCAPTCHA v2
+          - Phân quyền: Admin → Admin.aspx, User → index.aspx
+          - Lưu thông tin người dùng vào Session["User"]
+
+  [✓] 3. QUÊN MẬT KHẨU
+          - Xác minh bằng cặp (TenDangNhap + Email)
+          - Đặt lại mật khẩu mới trực tiếp vào database
+
+  [✓] 4. GIỎ HÀNG (Shopping Cart)
+          - Thêm sản phẩm vào giỏ (có chọn số lượng)
+          - Xem danh sách sản phẩm trong giỏ
+          - Cập nhật số lượng từng sản phẩm
+          - Xóa sản phẩm khỏi giỏ
+          - Giỏ hàng lưu vào database (không mất khi đóng trình duyệt)
+
+  [✓] 5. ĐẶT HÀNG / THANH TOÁN
+          - Điền thông tin người nhận (tên, SĐT, địa chỉ)
+          - Chọn phương thức thanh toán
+          - Tự động lưu thông tin giao hàng vào hồ sơ cá nhân
+          - Tạo đơn hàng với đầy đủ chi tiết sản phẩm
+          - Xóa giỏ hàng sau khi đặt thành công
+
+  [✓] 6. QUẢN LÝ ĐƠN HÀNG
+          - Xem toàn bộ lịch sử đơn hàng (mới nhất lên đầu)
+          - Hiển thị trạng thái đơn hàng
+          - Hủy đơn khi đơn đang "Chờ xác nhận"
+          - Yêu cầu trả hàng/hoàn tiền trong vòng 7 ngày sau khi "Hoàn thành"
+          - Mua lại đơn hàng cũ (thêm toàn bộ sản phẩm vào giỏ)
+
+  [✓] 7. CẬP NHẬT THÔNG TIN CÁ NHÂN
+          - Chỉnh sửa số điện thoại và địa chỉ
+          - Đồng bộ tức thì vào database và Session
+
+  [✓] 8. DANH MỤC & SẢN PHẨM
+          - Xem danh sách linh kiện xe máy
+          - Xem chi tiết từng sản phẩm (giá, mô tả, tồn kho, hình ảnh)
+          - Phân loại theo danh mục
+
+  [✓] 9. HỆ THỐNG FILE CSS/JS
+          - style.css     (29.547 bytes) : CSS giao diện tổng thể
+          - auth.css      (12.842 bytes) : CSS trang xác thực (đăng nhập/đăng ký)
+          - app.js        (22.404 bytes) : JavaScript tổng thể
+          - auth.js       (2.783 bytes)  : JavaScript xác thực
+
+  [✓] 10. TÀI NGUYÊN HÌNH ẢNH (17 file trong /images)
+           Các ảnh sản phẩm: Ac quy Honda, Bộ nhông xích, Lốp, Tấm lọc gió,
+           Bộ chế hòa khí, Bộ nhông sen Sirius, Bugi, Đĩa phanh,
+           Má phanh, Pô Suzuki, Sen cặp, v.v.
+           Ảnh QR code thanh toán: qr-code.jpg
+
+
+==============================================================
+VI. TRẠNG THÁI ĐƠN HÀNG TRONG HỆ THỐNG
+==============================================================
+  "Chờ xác nhận"      → Có thể HỦY
+  "Đang xử lý"        → Không thể hủy
+  "Đang giao hàng"    → Không thể hủy
+  "Hoàn thành"        → Có thể YÊU CẦU TRẢ HÀNG (trong 7 ngày)
+  "Đã hủy"            → Trạng thái cuối
+  "Trả hàng/Hoàn tiền" → Trạng thái cuối
+
+
+==============================================================
+VII. THỐNG KÊ FILE DỰ ÁN
+==============================================================
+  Tổng thư mục  : 12 thư mục
+  Tổng file     : 45+ file
+  Các trang ASPX: 11 trang
+  Các API ASHX  : 9 endpoint
+  Models (EF)   : 11 bảng / entity
+  Hình ảnh      : 17 file
+  File CSS      : 2 file (~42 KB)
+  File JS       : 2 file (~25 KB)
+
+
+==============================================================
+VIII. CÔNG NGHỆ & THƯ VIỆN SỬ DỤNG
+==============================================================
+  - ASP.NET WebForms (.NET Framework)
+  - Entity Framework (Database-First, EDMX)
+  - SQL Server (cơ sở dữ liệu chính)
+  - Newtonsoft.Json (serialize/deserialize JSON trong API)
+  - Google reCAPTCHA v2 (chống bot đăng nhập/đăng ký)
+  - Session State (lưu trữ thông tin đăng nhập)
+  - LINQ to Entities (truy vấn database)
+
+
+==============================================================
+     Báo cáo được tạo tự động bởi Antigravity AI
+==============================================================
